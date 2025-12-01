@@ -1,5 +1,3 @@
-/* eslint-disable sonarjs/no-duplicate-string */
-/* eslint-disable security/detect-non-literal-fs-filename */
 /**
  * @typedef {import('../common.types.js').BundlerCommandArgsType} BundlerCommandArgsType
  * @typedef {import('./themeBundler.types.js').ThemeBundlerConfigType} ThemeBundlerConfigType
@@ -13,6 +11,7 @@ import fs from 'fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { transform } from 'lightningcss';
+import chokidar from 'chokidar';
 
 /** @type {BundlerCommandArgsType} */
 const argv = yargs(hideBin(process.argv)).argv;
@@ -21,6 +20,8 @@ const MODE = argv.mode === 'production' ? 'production' : 'development';
 const VERBOSE = argv.verbose;
 
 class ThemeBundler {
+    /** @type {import('chokidar').FSWatcher[]} */
+    watchers = [];
     /**
      * This class bundles and watches themes.
      * @param {ThemeBundlerConfigType} config
@@ -290,6 +291,7 @@ class ThemeBundler {
     getFiles() {
         const commonThemeFile = this.getCommonThemeFile();
         const includes = this.getIncludes();
+        
         const patternFiles = this.getPatternFiles();
         return [commonThemeFile, ...includes, ...patternFiles]
             .filter(file => typeof file === 'string' && fs.existsSync(file))
@@ -459,14 +461,25 @@ class ThemeBundler {
      * @param {StyleUpdateCallbackType} [callback] - The callback to execute after a change.
      */
     watchPath(path, bundle = true, callback) {
-        fs.watch(path, { recursive: true }, async (event, file) => {
+        this.watcher = chokidar.watch(path, {
+            ignored: /node_modules/,
+            persistent: true
+        });
+        this.watchers.push(this.watcher);
+
+        this.watcher.on('change', async filePath => {
             const bundledFile = `${this.themeName}.bundled.${this.extension}`;
-            if (file && ![bundledFile].includes(file) && PATH.extname(file) === `.${this.extension}`) {
+            const fileName = PATH.basename(filePath);
+            if (
+                fileName &&
+                ![bundledFile].includes(fileName) &&
+                PATH.extname(filePath) === `.${this.extension}`
+            ) {
                 if (bundle) {
                     await this.bundle();
                 }
                 if (typeof callback === 'function') {
-                    callback(file, event);
+                    callback(fileName, 'change');
                 }
             }
         });
@@ -486,20 +499,26 @@ class ThemeBundler {
     }
 
     /**
-     * Watches a pattern for changes.
+     * Watches the given pattern path for changes and bundles the theme.
      * @param {string} pattern
      * @param {StyleUpdateCallbackType} [callback]
      * @param {boolean} [bundle]
      */
     watchPattern(pattern, callback, bundle = true) {
-        const path = pattern.replace('/**/*', '');
+        const path = pattern.replace('/**/*', '').replace('/*', '');
         if (!fs.existsSync(path)) return;
-        fs.watch(path, { recursive: true }, async (event, file) => {
-            const ext = file ? PATH.extname(file).slice(1) : '';
-            const subExt = file ? PATH.basename(file).split('.')[1] : '';
+        const watcher = chokidar.watch(path, {
+            ignored: /node_modules/,
+            persistent: true
+        });
+        this.watchers.push(watcher);
+
+        watcher.on('change', async filePath => {
+            const ext = PATH.extname(filePath).slice(1);
+            const subExt = PATH.basename(filePath).split('.')[1];
             if (this.extension === ext && subExt === this.themeName) {
                 bundle && (await this.bundle());
-                typeof callback === 'function' && callback(file || '', event);
+                typeof callback === 'function' && callback(PATH.relative(path, filePath), 'change');
             }
         });
     }
@@ -519,6 +538,15 @@ class ThemeBundler {
             if (fs.existsSync(filePath)) {
                 fs.unlinkSync(filePath);
             }
+            const exportPath = this._config?.exportPath;
+            const exportedFilePath = PATH.normalize(`${exportPath}/${name}/${file}`);
+            if (exportPath && fs.existsSync(exportedFilePath)) {
+                fs.unlinkSync(exportedFilePath);
+            }
+        });
+
+        this.watchers.forEach(watcher => {
+            watcher?.close();
         });
     }
 }

@@ -1,10 +1,10 @@
 {
     "author": "Andres Vaquero (@arpadroid) <web.andresvaquero@gmail.com> ",
-    "name": "@arpadroid/stylesheet-bundler",
+    "name": "@arpadroid/style-bun",
     "type": "module",
-    "version": "1.1.1",
+    "version": "0.2.0",
     "exports": "./src/index.mjs",
-    "types": "dist/@types/types.compiled.d.ts",
+    "types": "./src/types.d.ts",
     "description": "Aiming to deliver CSS scalability, maintainability and performance, and ultimately striving to boost CSS development experience, productivity and efficiency, Arpadroid Stylesheet Bundler package helps bundling stylesheets across your application into different stylesheets or themes.",
     "keywords": [
         "Style sheet bundler",
@@ -16,28 +16,38 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/arpadroid/stylesheet-bundler.git"
+        "url": "git+https://github.com/arpadroid/style-bun.git"
     },
-    "homepage": "https://github.com/arpadroid/stylesheet-bundler#readme",
+    "homepage": "https://github.com/arpadroid/style-bun#readme",
     "scripts": {
-        "bundle:css:dev": "node ./demo/css/bundle.js",
-        "bundle:css:prod": "node ./demo/css/bundle.js --mode=production",
-        "build": "node ./node_modules/@arpadroid/module/scripts/build-project.mjs --project=stylesheet-bundler --minify",
-        "test": "node ./node_modules/@arpadroid/module/scripts/test-project.mjs --project=stylesheet-bundler --storybook --jest --port=6025"
+        "bundle:dev": "node ./demo/css/bundle.js",
+        "bundle:prod": "node ./demo/css/bundle.js --mode=production",
+        "start:demo": "browser-sync start --server demo/css --files 'demo/**/*' --port 8080 --startPath /demo.html --no-notify",
+        "demo": "npm run bundle:dev & npm run start:demo",
+        "test": "jest",
+        "lint": "eslint src/**/*.{js,mjs}",
+        "lint:fix": "eslint src/**/*.{js,mjs} --fix",
+        "lint:test": "eslint src/**/*.test.{js,mjs}",
+        "clean": "rm -rf ./dist ./node_modules package-lock.json",
+        "clean:build": "npm run clean && npm install && npm run build"
     },
     "license": "MIT",
     "devDependencies": {
-        "@arpadroid/module": "file:../module",
-        "@babel/plugin-syntax-import-assertions": "^7.23.3",
         "@babel/preset-env": "^7.23.9",
-        "@types/node": "^22.13.5",
-        "@types/yargs": "^17.0.33"
+        "@eslint/js": "^9.39.1",
+        "@types/jest": "^30.0.0",
+        "babel-jest": "^30.2.0",
+        "browser-sync": "^3.0.4",
+        "eslint": "^9.39.1",
+        "globals": "^16.5.0",
+        "jest": "^30.2.0",
+        "jest-environment-jsdom": "^30.2.0",
+        "jsdom": "^27.2.0"
     },
     "dependencies": {
+        "chokidar": "^5.0.0",
         "glob": "^11.0.0",
-        "less": "^4.2.0",
         "lightningcss": "^1.24.0",
-        "sass": "^1.71.1",
         "yargs": "^17.7.2"
     }
 }

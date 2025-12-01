@@ -5,8 +5,11 @@
  * E.g. `node ./scripts/bundle.js --mode=production`.
  * @typedef {import('../../src/ThemeBundlerConfigType').ThemeBundlerConfigType} ThemeBundlerConfigType
  */
-const ThemesBundler = require('../../src/themesBundler');
-const argv = require('yargs').argv;
+import ThemesBundler from '../../src/themesBundler/themesBundler.mjs';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+
+const argv = yargs(hideBin(process.argv)).argv;
 const mode = argv.mode === 'production' ? 'production' : 'development';
 const cwd = process.cwd();
 const basePath = cwd + '/demo/css/themes';

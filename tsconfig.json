@@ -1,11 +1,25 @@
 {
-    "extends": "./node_modules/@arpadroid/module/src/tsconfig/nodenext/tsconfig.json",
     "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true,
+        "declaration": true,
+        "declarationMap": true,
+        "emitDeclarationOnly": false,
+        "esModuleInterop": true,
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "resolveJsonModule": true,        
+        "strict": true,
+        "target": "ESNext",
+        "types": ["jest", "node"],
+        "typeRoots": ["./node_modules/@types", "./node_modules/@arpadroid/module/node_modules/@types"],
+        "useDefineForClassFields": false,
+        "strictPropertyInitialization": false,
         "rootDir": "./src",
-        "outDir": "./.tmp/.types",
+        "outDir": "./dist/@types",
         "jsx": "react",
         "skipLibCheck": true
     },
     "include": ["src/**/*"],
-    "exclude": ["./node_modules", "dist", "**/*.test.ts", "**/*.test.js", "./dist/@types"]
+    "exclude": ["./node_modules", "dist", "./dist/@types"]
 }

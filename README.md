@@ -16,8 +16,31 @@ A powerful and flexible CSS/SCSS/LESS bundler designed for theme-based applicati
 ## Installation
 
 ```bash
-npm install @arpadroid/stylesheet-bundler
+npm install @arpadroid/style-bun
 ```
+
+## Development Setup
+
+Clone and set up the project for development:
+
+```bash
+git clone https://github.com/arpadroid/style-bun.git
+cd style-bun
+npm install
+
+# Run demo with live reload
+npm run demo
+
+# Bundle CSS in development mode
+npm run bundle:dev
+
+# Bundle CSS for production
+npm run bundle:prod
+
+# Run tests
+npm test
+```
+
 
 ## Quick Start
 
@@ -55,7 +78,7 @@ src/
 ### 3. Bundle Themes
 
 ```javascript
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
+import { ThemesBundler } from '@arpadroid/style-bun';
 
 const bundler = new ThemesBundler({
   themes: [
@@ -73,7 +96,7 @@ await bundler.bundle();
 ### Basic Theme Bundling
 
 ```javascript
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
+import { ThemesBundler } from '@arpadroid/style-bun';
 
 const bundler = new ThemesBundler({
   themes: [
@@ -98,31 +121,22 @@ if (process.env.NODE_ENV === 'development') {
 ```javascript
 const bundler = new ThemesBundler({
   themes: [
-    { 
-      path: './src/themes/default',
-      extension: 'scss',
-      target: './dist/themes/default.css',
-      minifiedTarget: './dist/themes/default.min.css'
-    },
-    { 
-      path: './src/themes/dark',
-      extension: 'scss'
-    }
+    { path: './src/themes/default' },
+    { path: './src/themes/dark' }
   ],
   patterns: [
     './src/components/**/*',
     './src/layouts/**/*'
   ],
   commonThemePath: './src/themes/common',
-  minify: true,
-  exportPath: './dist/themes'
+  minify: true
 });
 ```
 
 ### Individual Theme Bundler
 
 ```javascript
-import { ThemeBundler } from '@arpadroid/stylesheet-bundler';
+import { ThemeBundler } from '@arpadroid/style-bun';
 
 const theme = new ThemeBundler({
   path: './src/themes/default',
@@ -143,24 +157,16 @@ await theme.bundle();
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `themes` | `ThemeBundlerConfig[]` | Array of theme configurations |
+| `themes` | `ThemeConfig[]` | **Required** - Array of theme configurations |
 | `patterns` | `string[]` | Glob patterns to find additional theme files |
 | `minify` | `boolean` | Enable minification (default: false) |
 | `commonThemePath` | `string` | Path to shared theme files |
-| `exportPath` | `string` | Output directory for bundled themes |
-| `watchPaths` | `string[]` | Additional paths to watch for changes |
 
 ### Theme Configuration
 
 | Option | Type | Description |
 |--------|------|-------------|
 | `path` | `string` | **Required** - Absolute path to theme directory |
-| `includes` | `string[]` | Stylesheet paths relative to theme directory |
-| `extension` | `'css' \| 'scss' \| 'less'` | File extension (default: 'css') |
-| `target` | `string` | Custom output path for development build |
-| `minifiedTarget` | `string` | Custom output path for minified build |
-| `baseTheme` | `string` | Base theme to extend from |
-| `verbose` | `boolean` | Enable detailed logging |
 
 ### Theme Config File
 
@@ -197,15 +203,14 @@ Examples:
 ### Output Files
 
 The bundler generates these files in each theme directory:
-- `[theme-name].bundled.css` - Development version
-- `[theme-name].min.css` - Minified production version
+- `[theme-name].bundled.css` - Bundled CSS (minified when `minify: true` option is used)
 
 ## Development Workflow
 
 ### Watch Mode for Live Development
 
 ```javascript
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
+import { ThemesBundler } from '@arpadroid/style-bun';
 
 const bundler = new ThemesBundler({
   themes: [
@@ -230,7 +235,7 @@ bundler.cleanup();
 
 ```javascript
 // webpack.config.js
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
+import { ThemesBundler } from '@arpadroid/style-bun';
 
 export default async () => {
   const bundler = new ThemesBundler({
@@ -258,7 +263,7 @@ export default async () => {
 ```javascript
 // vite.config.js
 import { defineConfig } from 'vite';
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
+import { ThemesBundler } from '@arpadroid/style-bun';
 
 export default defineConfig(async () => {
   const bundler = new ThemesBundler({
@@ -276,18 +281,28 @@ export default defineConfig(async () => {
 });
 ```
 
-## Live Reload Setup
+## Live Development with Browser Sync
 
-For optimal development experience with instant CSS updates:
+The project includes integrated browser sync for optimal development experience:
 
-### 1. Install LiveReload Extension
-- [Chrome Extension](https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei)
-- [Firefox Extension](https://addons.mozilla.org/en-US/firefox/addon/livereload-web-extension/)
+### Demo Development Server
 
-### 2. Set Up File Watcher
+```bash
+# Start demo server with live reload
+npm run demo
+```
+
+This will:
+- Bundle your CSS automatically (`bundle:dev`)
+- Start browser-sync server on port 8080
+- Watch for changes in `demo/css/themes/**/*`
+- Auto-refresh browser when CSS files change
+- Open demo page at http://localhost:8080/demo.html
+
+### Manual Setup for Your Project
 
 ```javascript
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
+import { ThemesBundler } from '@arpadroid/style-bun';
 
 const bundler = new ThemesBundler({
   themes: [{ path: './src/themes/default' }]
@@ -301,8 +316,15 @@ if (process.env.NODE_ENV === 'development') {
 }
 ```
 
-### 3. Serve Your Application
-Make sure your application runs on a local server (not file://) for LiveReload to work.
+### Integration with Browser Sync
+
+```bash
+# Install browser-sync in your project
+npm install --save-dev browser-sync
+
+# Add to your package.json scripts
+"start:demo": "browser-sync start --server [your-demo-dir] --files '[css-pattern]' --port 8080 --no-notify"
+```
 
 ## Examples
 
@@ -351,12 +373,36 @@ const bundler = new ThemesBundler({
 - **Selective Loading** - Load only the theme styles you need
 - **Production Optimization** - Automatic minification and compression
 
-### 🔧 **Framework Agnostic**
+### 🔧 **Framework Agnostic & Modern**
 Works with any setup:
 - React, Vue, Angular applications
 - Static site generators
-- Node.js applications
+- Node.js applications  
+- ES Modules support (type: "module")
 - Webpack, Vite, Rollup, or custom build systems
+- Cross-platform file watching with Chokidar
+- Integrated browser sync for development
+
+## Available Scripts
+
+The project includes several npm scripts for development and building:
+
+```bash
+# Development
+npm run bundle:dev          # Bundle CSS for development
+npm run demo                # Start demo with browser sync
+npm run start:demo          # Start browser sync server only
+
+# Production  
+npm run bundle:prod         # Bundle and minify CSS for production
+
+# Testing
+npm test                    # Run Jest tests
+
+# Maintenance
+npm run clean               # Clean dist, node_modules, package-lock
+npm run clean:build         # Clean and reinstall everything
+```
 
 ## Migration from Old Versions
 
@@ -367,7 +413,7 @@ If migrating from older versions, update your imports:
 const { ThemesBundler } = require('arpadroid-themes');
 
 // New (ES Modules)
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
+import { ThemesBundler } from '@arpadroid/style-bun';
 ```
 
 ## API Reference
@@ -387,10 +433,19 @@ import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
 
 ## Dependencies
 
-- **LightningCSS** - Fast CSS processing and minification
-- **Sass** - SCSS compilation support
-- **Less** - LESS compilation support
+### Core Dependencies
+- **LightningCSS** - Ultra-fast CSS processing and minification
+- **Chokidar** - Cross-platform file watching for live reload
 - **Glob** - File pattern matching
+- **Yargs** - Command line argument parsing
+
+### Development Dependencies  
+- **Browser Sync** - Live reload development server
+- **Jest** - Testing framework
+- **Babel Jest** - ES6+ transpilation for tests
+- **jsdom** - DOM implementation for testing
+
+Note: SCSS and LESS support is available but packages are dynamically imported only when needed to keep the bundle lightweight.
 
 ## License
 

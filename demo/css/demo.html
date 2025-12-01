@@ -25,50 +25,89 @@
     <body>
         <div class="documentWrapper">
             <header>
-                <h1>Arpadroid - Stylesheet Bundler</h1>
+                <h1>Arpadroid Stylesheet Bundler</h1>
+                <p class="subtitle">A CSS/SCSS/LESS bundler for multi-theme applications</p>
             </header>
             <main>
                 <p>
-                    Welcome to this demo of
-                    <a href="https://github.com/arpadroid/style-bun" target="_blank">Arpadroid Stylesheet Bundler</a>.<br />
-                    Refer to the link above to access the source code and documentation on GitHub.
+                    Welcome to the demo of
+                    <a href="https://github.com/arpadroid/style-bun" target="_blank">Arpadroid Stylesheet Bundler</a> -
+                    a powerful and flexible bundler designed for theme-based applications with automatic compilation, minification, and live reload support.
                 </p>
-                <p>
-                    You can use this as a playground to experiment with the theme stylesheets and explore the
-                    possibilities. I will demonstrate some handy use cases below. <br/>
-                </p>
+                
+                <section class="features">
+                    <h2>✨ Key Features</h2>
+                    <ul>
+                        <li>🎨 <strong>Multi-Theme Support</strong> - Bundle multiple themes simultaneously (light/dark, mobile/desktop)</li>
+                        <li>📦 <strong>Multiple Preprocessors</strong> - CSS, SCSS, and LESS support with automatic compilation</li>
+                        <li>⚡ <strong>Lightning Fast</strong> - Built with LightningCSS for optimal performance</li>
+                        <li>🔄 <strong>Live Reload</strong> - Watch mode with instant browser updates (no state loss)</li>
+                        <li>🗜️ <strong>Automatic Minification</strong> - Production-ready minified outputs</li>
+                        <li>📁 <strong>Modular Architecture</strong> - Import stylesheets from anywhere in your project</li>
+                    </ul>
+                </section>
                 <details>
-                    <summary><h2>Setting up</h2></summary>
-                    <p>
-                        <strong>To get the demo environment set up, you can follow these steps:</strong>
-                    </p>
-                    <ol>
-                        <li>
-                            If you have checked out the project from GitHub, you will need to run
-                            <code>npm install</code> at the root of the project. If you have installed it through
-                            NPM then you don't need to do this.
-                        </li>
-                        <li>
-                            To get the bundler running in this demo you can go to the root of this project using the CLI and
-                            run the command <code>npm run bundle:css:dev</code>.
-                            <br />
-                            This should be watching your files and recompiling them on change.
-                        </li>
-                        <li>
-                            To get Livereload working also run the command <code>guard</code> from the root of
-                            this project.
-                            <br />
-                            Make sure you have read the
-                            <a href="https://github.com/arpadroid/style-bun" target="_blank">docs</a> and installed
-                            the necessary dependencies. <br />
-                            If done correctly, you should see the new styles instantly refresh in the browser when
-                            you make a change and the state of your page will remain intact.
-                        </li>
-                    </ol>
+                    <summary><h2>🚀 Quick Start</h2></summary>
+                    <h3>Installation</h3>
+                    <pre><code>npm install @arpadroid/style-bun</code></pre>
+                    
+                    <h3>Development Setup</h3>
+                    <p>If you've cloned this project from GitHub:</p>
+                    <pre><code>git clone https://github.com/arpadroid/style-bun.git
+cd style-bun
+npm install
+
+# Run demo with live reload
+npm run demo
+
+# Or run individual commands:
+npm run bundle:dev  # Bundle CSS in development mode
+npm start           # Start the demo server</code></pre>
+                    
+                    <h3>Basic Usage</h3>
+                    <pre><code>import { ThemesBundler } from '@arpadroid/style-bun';
+
+const bundler = new ThemesBundler({
+  themes                    <a href="https://github.com/arpadroid/style-bun" target="_blank">docs</a>
+    { path: './src/themes/default' },
+    { path: './src/themes/dark' }
+  ],
+  minify: process.env.NODE_ENV === 'production'
+});
+
+await bundler.bundle();</code></pre>
                 </details>
     
                 <details>
-                    <summary><h2>Toggling themes interactively</h2></summary>
+                    <summary><h2>📁 Theme Structure</h2></summary>
+                    <p>Create a modular theme structure like this:</p>
+                    <pre><code>src/
+└── themes/
+    ├── default/
+    │   ├── default.config.json
+    │   ├── vars/
+    │   │   ├── colors.css
+    │   │   └── typography.css
+    │   └── components/
+    │       └── buttons.css
+    └── dark/
+        ├── dark.config.json
+        └── vars/
+            └── colors.css</code></pre>
+            
+                    <p>Configure each theme with a config file:</p>
+                    <pre><code>// default.config.json
+{
+  "includes": [
+    "vars/colors",
+    "vars/typography", 
+    "components/buttons"
+  ]
+}</code></pre>
+                </details>
+                
+                <details>
+                    <summary><h2>🎨 Interactive Theme Toggling</h2></summary>
                     <p>
                         We have added a stylesheet in the head of this document for the dark theme. If you inspect
                         the source you will notice that the dark theme stylesheet is disabled by default. It has
@@ -109,13 +148,32 @@
                     </p>
                     
                 </details>
-                <p>
-                    <strong>Did you know?</strong> Toggling stylesheets off when not needed can help reduce the load on the browser and improve rendering performance in a considerable way.
-                    <br/>
-                    <br/>  
-                    Last but not least... organizing your stylesheets in the way Arpadroid Themes allows to, helps reduce the complexity and cognitive load of working with large stylesheets, keeping your styles more organized and maintainable.
-                </p>
-                <p>More to come...</p>
+                <section class="benefits">
+                    <h2>💡 Benefits</h2>
+                    <p>
+                        <strong>Performance:</strong> Toggling stylesheets when not needed reduces browser load and improves rendering performance significantly.
+                    </p>
+                    <p>
+                        <strong>Maintainability:</strong> Modular theme organization reduces complexity and cognitive load when working with large stylesheets.
+                    </p>
+                    <p>
+                        <strong>Scalability:</strong> Support for multiple preprocessors (CSS, SCSS, LESS) with automatic compilation and minification.
+                    </p>
+                    <p>
+                        <strong>Loose Coupling:</strong> Theme-based architecture promotes separation of concerns, making styles independent and easier to maintain across different components.
+                    </p>
+                    <p>
+                        <strong>Developer Experience:</strong> Lightning fast updates with live reload that preserves current page state - no more losing form data or scroll position during development.
+                    </p>
+                </section>
+                
+                <footer>
+                    <p>
+                        Learn more: 
+                        <a href="https://github.com/arpadroid/style-bun" target="_blank">GitHub Repository</a> |
+                        <a href="https://www.npmjs.com/package/@arpadroid/style-bun" target="_blank">NPM Package</a>
+                    </p>
+                </footer>
             </main>
         </div>
     </body>

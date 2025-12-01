@@ -13,7 +13,6 @@ const outputDir = path.join(testDir, 'output');
 const filePatterns = [path.join(demoDir, 'components'), path.join(demoDir, 'pages')];
 const customThemeDir = path.join(testDir, 'custom-theme');
 const customConfigPath = path.join(customThemeDir, 'custom-theme.config.json');
-const newComponentDir = path.join(demoDir, 'components', 'new-component');
 
 async function initializeCustomTheme() {
     // create custom theme directory and files

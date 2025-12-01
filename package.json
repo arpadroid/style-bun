@@ -16,7 +16,7 @@
         "README.md",
         "LICENSE"
     ],
-    "description": "A CSS/SCSS/LESS bundler for multi-theme applications. Bundle modular stylesheets into themes with automatic compilation, minification, and live reload support.",
+    "description": "A stylesheet bundler for multi-theme applications focusing on scalability and DX. Bundle modular stylesheets into themes with automatic compilation, minification, and live reload support.",
     "keywords": [
         "Style sheet bundler",
         "LESS bundler",
@@ -27,20 +27,19 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/arpadroid/stylesheet-bundler.git"
+        "url": "git+https://github.com/arpadroid/style-bun.git"
     },
-    "homepage": "https://github.com/arpadroid/stylesheet-bundler#readme",
+    "homepage": "https://github.com/arpadroid/style-bun#readme",
     "bugs": {
-        "url": "https://github.com/arpadroid/stylesheet-bundler/issues"
+        "url": "https://github.com/arpadroid/style-bun/issues"
     },
     "scripts": {
         "start": "npm run demo",
         "dev": "npm run demo",
-        "demo": "npm run bundle:dev & npm run start:demo",
+        "demo": "npm run build:dev & npm run start:demo",
         "start:demo": "browser-sync start --server demo/css --files 'demo/**/*' --port 8080 --startPath /demo.html --no-notify",
-        "build": "npm run bundle",
-        "bundle": "node ./demo/css/bundle.js --mode=production",
-        "bundle:dev": "node ./demo/css/bundle.js",
+        "build": "node ./demo/css/bundle.js --mode=production",
+        "build:dev": "node ./demo/css/bundle.js",
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage",

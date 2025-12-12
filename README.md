@@ -9,15 +9,28 @@ Style Bun is a powerful and flexible bundler designed for scalability and develo
 - 📁 **Modular Architecture** - Import stylesheets from anywhere in your project with loose coupling and separation of concerns.
 - ⚡ **Lightning Fast Performance** - Built with LightningCSS for optimal speed and reduced browser load.
 - 🪶 **Ultra-Lightweight & Zero Config** - Minimal dependencies and works out-of-the-box with sensible defaults.
-- 📦 **Multiple Preprocessors** - CSS, SCSS, and LESS support with automatic compilation and minification for production-ready outputs.
+- 📦 **CSS & SCSS Support** - CSS works out-of-the-box. Optional SCSS support with automatic compilation and minification for production-ready outputs.
 - 🌍 **Framework Agnostic** - Works seamlessly with any web application without framework dependencies.
 
 ## 🚀 Quick Start
+
+### Prerequisites
+
+- **Node.js** >= 16.0.0
+- **npm** >= 8.0.0
 
 ### Installation
 
 ```bash
 npm install @arpadroid/style-bun
+```
+
+#### Optional SCSS Support
+
+If you plan to use SCSS files, install the sass preprocessor:
+
+```bash
+npm install sass
 ```
 
 ### Basic Usage
@@ -26,7 +39,7 @@ Within your build script (e.g., `build.js`), set up the Themes Bundler as follow
 
 ```javascript
 // Import dependencies.
-import ThemesBundler from '@arpadroid/style-bun';
+import { ThemesBundler } from '@arpadroid/style-bun';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
@@ -79,7 +92,7 @@ Configuration options for the main `ThemesBundler` instance:
 | `themes`          | `ThemeBundlerConfigType[]` | `[]`              | Array of theme configurations. Each theme only requires a `path` property pointing to the theme directory.                                       |
 | `patterns`        | `string[]`                 | `[]`              | Directory paths or glob patterns for finding theme files in external directories. Files must follow `[filename].[themeName].[extension]` naming. |
 | `minify`          | `boolean`                  | `false`           | Whether bundled themes should be minified. Set to `true` for production builds.                                                                  |
-| `commonThemePath` | `string`                   | `undefined`       | Path to a common theme used as base for all themes. Useful for SCSS/Less mixins required during compilation.                                     |
+| `commonThemePath` | `string`                   | `undefined`       | Path to a common theme used as base for all themes. Useful for SCSS mixins required during compilation.                                     |
 | `watchPaths`      | `string[]`                 | `[process.cwd()]` | Paths to monitor for changes in external theme files. Defaults to current working directory if not specified.                                    |
 | `exportPath`      | `string`                   | `undefined`       | Custom export path for bundled themes.                                                                                                           |
 
@@ -92,7 +105,7 @@ These options can be overridden when defining themes in the `ThemesBundler` arra
 | ----------------- | --------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `path`            | `string`                    | `undefined`                           | Absolute path to theme directory. Required when defining themes in ThemesBundler array.          |
 | `includes`        | `string[]`                  | `[]`                                  | Stylesheet paths to include in compilation, relative to theme directory without file extensions. |
-| `extension`       | `'css' \| 'less' \| 'scss'` | `'css'`                               | File extension for theme stylesheets. Each theme can use different preprocessors.                |
+| `extension`       | `'css' \| 'scss'` | `'css'`                               | File extension for theme stylesheets. SCSS requires `sass` package to be installed separately. |
 | `baseTheme`       | `string`                    | `undefined`                           | Name of base theme to inherit from. Base theme contents are prepended to current theme output.   |
 | `commonThemeFile` | `string`                    | `undefined`                           | Path to common stylesheet. Set internally by ThemesBundler when `commonThemePath` is specified.  |
 | `configFile`      | `string`                    | `[themePath]/[themeName].config.json` | Absolute path to theme config file. Auto-detected if not specified.                              |
@@ -167,6 +180,10 @@ npm start           # Start the demo server
 - **[Chokidar](https://github.com/paulmillr/chokidar)** - Cross-platform file watching for live reload
 - **[Glob](https://github.com/isaacs/node-glob)** - File pattern matching
 - **[Yargs](https://yargs.js.org/)** - Command line argument parsing
+
+### Optional Dependencies
+
+- **[SASS](https://sass-lang.com/)** - SCSS preprocessing and compilation (install separately if needed)
 
 ### Development Dependencies
 

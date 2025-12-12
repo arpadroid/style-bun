@@ -15,11 +15,10 @@ export type ThemeBundlerConfigType = {
     includes?: string[];
 
     /**
-     * @property {'css' | 'less' | 'scss'} extension - The extension of the theme files, the default is 'css'.
-     * Note: the ThemesBundler will allow you to have different themes with different extensions.
-     * You have the possibility to have a theme with a .less extension and another with a .scss extension.
+     * @property {'css' | 'scss'} extension - The extension of the theme files, the default is 'css'.
+     * Note: SCSS support requires the 'sass' package to be installed separately.
      */
-    extension?: 'css' | 'less' | 'scss';
+    extension?: 'css' | 'scss';
 
     /**
      * @property {string} baseTheme - The name of the base theme to be used as a base for the current theme, its contents will be prepended to the current theme file.

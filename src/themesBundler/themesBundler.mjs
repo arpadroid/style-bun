@@ -21,7 +21,7 @@ class ThemesBundler {
     themesByName = {};
 
     /**
-     * This class bundles and watches CSS/LESS/SCSS themes.
+     * This class bundles and watches CSS/SCSS themes.
      * @param {ThemesBundlerConfigType} config
      */
     constructor(config) {

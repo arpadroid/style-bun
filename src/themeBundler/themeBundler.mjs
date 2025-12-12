@@ -55,6 +55,19 @@ class ThemeBundler {
     }
 
     /**
+     * Checks if SCSS support is available.
+     * @returns {boolean}
+     */
+    hasSassSupport() {
+        try {
+            require.resolve('sass');
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
      * Returns the path to the config file.
      * @returns {string}
      */
@@ -73,7 +86,7 @@ class ThemeBundler {
         this.themeName = this.path?.split(PATH.sep).pop() ?? '';
         this._fileConfig = await this._loadFileConfig();
         Object.assign(this._config || {}, this._fileConfig || {});
-        /** @type {'css' | 'less' | 'scss' | undefined} extension */
+        /** @type {'css' | 'scss' | undefined} extension */
         this.extension = extension;
 
         if (baseTheme) {
@@ -154,16 +167,17 @@ class ThemeBundler {
         const { styles, targetFile, result } = await this.writeStyles();
         let css = styles;
         let minifiedTargetFile = this.getMinifiedTargetFile();
-        if (targetFile && this.extension === 'less') {
-            const targetCSS = targetFile.replace('.less', '.css');
-            await this.lessToCss(targetFile, targetCSS);
-            css = fs.readFileSync(targetCSS, 'utf8');
-            minifiedTargetFile = minifiedTargetFile.replace('.less', '.css');
-        } else if (targetFile && this.extension === 'scss') {
-            const targetCSS = targetFile.replace('.scss', '.css');
-            await this.scssToCss(targetFile, targetCSS);
-            css = fs.readFileSync(targetCSS, 'utf8');
-            minifiedTargetFile = minifiedTargetFile.replace('.scss', '.css');
+        if (targetFile && this.extension === 'scss') {
+            if (!this.hasSassSupport()) {
+                console.warn('⚠️  SCSS files detected but \'sass\' is not installed. Run: npm install sass');
+                console.warn('   Treating SCSS files as CSS for now.');
+                css = styles;
+            } else {
+                const targetCSS = targetFile.replace('.scss', '.css');
+                await this.scssToCss(targetFile, targetCSS);
+                css = fs.readFileSync(targetCSS, 'utf8');
+                minifiedTargetFile = minifiedTargetFile.replace('.scss', '.css');
+            }
         }
         if (MODE === 'production' || minify === true) {
             const { code } = transform({
@@ -349,25 +363,17 @@ class ThemeBundler {
     }
 
     /**
-     * Converts less to css.
-     * @param {string} lessFile
-     * @param {string} cssFile
-     * @returns {string}
-     */
-    lessToCss(lessFile, cssFile) {
-        const path = PATH.normalize('node_modules/less/bin/lessc');
-        const cmd = `node ${path} ${lessFile} > ${cssFile}`;
-        return execSync(cmd).toString();
-    }
-
-    /**
      * Converts scss to css.
      * @param {string} scssFile
      * @param {string} cssFile
      * @returns {string}
      */
     scssToCss(scssFile, cssFile) {
-        const cmd = `sass ${scssFile} ${cssFile}`;
+        if (!this.hasSassSupport()) {
+            throw new Error('SCSS compilation requires the sass package. Install it with: npm install sass');
+        }
+        const sassPath = PATH.resolve('node_modules/.bin/sass');
+        const cmd = `"${sassPath}" "${scssFile}" "${cssFile}"`;
         return execSync(cmd).toString();
     }
 
@@ -530,7 +536,7 @@ class ThemeBundler {
         const name = this.themeName;
         const ext = this.extension;
         const files = [`${name}.bundled.${ext}`, `${name}.min.css`];
-        if (this.extension !== 'css') {
+        if (this.extension === 'scss') {
             files.push(`${this.themeName}.bundled.css`);
         }
         files.forEach(file => {

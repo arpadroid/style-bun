@@ -13,11 +13,11 @@
     "description": "A stylesheet bundler for multi-theme applications focusing on scalability and DX. Bundle modular stylesheets into themes with automatic compilation, minification, and live reload support.",
     "keywords": [
         "Style sheet bundler",
-        "LESS bundler",
         "SCSS bundler",
+        "CSS themes", 
         "LiveReload",
         "CSS productivity",
-        "CSS themes"
+        "Theme bundler"
     ],
     "repository": {
         "type": "git",
@@ -69,5 +69,13 @@
         "glob": "^11.0.0",
         "lightningcss": "^1.24.0",
         "yargs": "^17.7.2"
+    },
+    "peerDependencies": {
+        "sass": "^1.77.0"
+    },
+    "peerDependenciesMeta": {
+        "sass": {
+            "optional": true
+        }
     }
 }

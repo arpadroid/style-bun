@@ -29,7 +29,7 @@ export interface ThemesBundlerConfigType {
 
     /**
      * @property {string} commonThemePath - A path to a common theme that will be used as a base for all defined themes.
-     * It can be useful when you have scss/less mixins that are required as part of the compilation process of other themes.
+     * It can be useful when you have scss mixins that are required as part of the compilation process of other themes.
      * If set the script will:
      *  1. Look for a theme config file in the specified directory
      *  2. If found, it will bundle the theme.

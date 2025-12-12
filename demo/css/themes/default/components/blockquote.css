@@ -1,6 +1,110 @@
 blockquote {
-    background-color: var(--search-hilight);
-    padding: 16px;
-    border-radius: 8px;
+    background: linear-gradient(135deg, var(--grey-50) 0%, var(--grey-100) 100%);
+    border-left: 0.25rem solid var(--color-primary);
+    border-radius: 0.5rem;
+    margin: 1.25rem 0;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    box-shadow: 0 0.125rem 0.75rem rgba(0, 0, 0, 0.08);
+    font-style: italic;
+    color: var(--grey-700);
+    line-height: 1.6;
+    transition: all 0.2s ease-in-out;
+}
+
+blockquote:hover {
+    box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.12);
+    transform: translateY(-0.0625rem);
+}
+
+blockquote::before {
+    content: '"';
+    font-size: 3rem;
+    color: var(--color-primary);
+    opacity: 0.3;
+    position: absolute;
+    top: 0.5rem;
+    left: 1rem;
+    font-family: 'Georgia', serif;
+    line-height: 1;
+}
+
+blockquote p {
     margin: 0;
+    padding-left: 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+blockquote p:first-child {
+    margin-top: 0;
+}
+
+blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+/* Citation/footer styling */
+blockquote footer,
+blockquote cite {
+    display: block;
+    margin-top: 1rem;
+    padding-left: 1.25rem;
+    font-style: normal;
+    font-size: 0.9rem;
+    color: var(--grey-550);
+    opacity: 0.8;
+}
+
+blockquote footer::before,
+blockquote cite::before {
+    content: '— ';
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    blockquote {
+        background: linear-gradient(135deg, var(--grey-850) 0%, var(--grey-800) 100%);
+        color: var(--grey-200);
+        border-left-color: var(--color-primary);
+        box-shadow: 0 0.125rem 0.75rem rgba(0, 0, 0, 0.3);
+    }
+    
+    blockquote:hover {
+        box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.4);
+    }
+    
+    blockquote::before {
+        color: var(--color-primary);
+    }
+    
+    blockquote footer,
+    blockquote cite {
+        color: var(--grey-400);
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    blockquote {
+        border-left-width: 0.375rem;
+        border-radius: 0.25rem;
+    }
+    
+    blockquote::before {
+        opacity: 0.6;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    blockquote {
+        transition: none;
+    }
+    
+    blockquote:hover {
+        transform: none;
+    }
 }

@@ -43,6 +43,18 @@ export default [
         }
     },
     {
+        // Configuration for browser/frontend files
+        files: ['demo/**/*.js', 'demo/**/*.mjs'],
+        languageOptions: {
+            ecmaVersion: 2022,
+            sourceType: 'module',
+            globals: {
+                ...globals.browser,
+                ...globals.es2022
+            }
+        }
+    },
+    {
         // Configuration for test files
         files: ['**/*.test.js', '**/*.test.mjs', '**/*.spec.js', '**/*.spec.mjs'],
         languageOptions: {

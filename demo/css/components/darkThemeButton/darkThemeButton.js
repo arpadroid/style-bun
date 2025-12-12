@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/no-duplicate-string */
 import ButtonComponent from '../button/button.js';
 class DarkThemeButton extends ButtonComponent {
     static get observedAttributes() {
@@ -32,7 +31,7 @@ class DarkThemeButton extends ButtonComponent {
     update() {
         const isLight = this.isLightTheme();
         this.iconNode.textContent = isLight ? '🌙' : '☀️';
-        this.buttonText.textContent = isLight ? 'Go dark theme' : 'Go light theme';
+        this.buttonText.textContent = isLight ? 'Dark theme' : 'Light theme';
     }
 
     onClick() {

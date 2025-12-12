@@ -1,7 +1,111 @@
 code {
     font-family: var(--font-code);
-    font-size: 0.9rem;
-    background-color: var(--search-hilight);
-    padding: 2px 4px;
-    border-radius: 4px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    background-color: var(--grey-50);
+    color: var(--grey-800);
+    padding: 4px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--grey-150);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    white-space: pre-wrap;
+    word-break: break-word;
+    transition: all 0.15s ease-in-out;
+
+    /* Syntax highlighting classes for better code presentation */
+    .keyword {
+        color: var(--blue-neon);
+        font-weight: 600;
+    }
+
+    .string {
+        color: var(--green);
+    }
+
+    .number {
+        color: var(--orange);
+    }
+
+    .comment {
+        color: var(--grey-550);
+        font-style: italic;
+    }
+
+    .function {
+        color: var(--violet-blue);
+        font-weight: 500;
+    }
+
+    .variable {
+        color: var(--red);
+    }
+}
+
+code:hover {
+    background-color: var(--grey-40);
+    border-color: var(--grey-200);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* For code blocks (pre + code) */
+pre code {
+    display: block;
+    background: var(--grey-30);
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--color-primary), var(--blue-neon));
+        border-radius: 8px 8px 0 0;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    code {
+        border-width: 2px;
+        font-weight: 600;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    code {
+        transition: none;
+    }
+}
+
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    code {
+        background-color: var(--grey-900);
+        color: var(--grey-200);
+        border-color: var(--grey-750);
+    }
+
+    code:hover {
+        background-color: var(--grey-850);
+        border-color: var(--grey-700);
+    }
+
+    pre code {
+        background: var(--grey-850);
+        border-color: var(--grey-800);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
 }

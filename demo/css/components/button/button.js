@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/no-duplicate-string */
 class ButtonComponent extends HTMLElement {
     constructor() {
         super();
@@ -37,11 +36,6 @@ class ButtonComponent extends HTMLElement {
     connectedCallback() {
         this.appendChild(this.button);
         this.update();
-    }
-
-    update() {
-        this.iconNode.textContent = this.isLightTheme() ? '🌙' : '☀️';
-        this.buttonText.textContent = this.isLightTheme() ? 'Go dark' : 'Go light';
     }
 }
 

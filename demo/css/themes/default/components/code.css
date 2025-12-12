@@ -13,6 +13,8 @@ code {
     white-space: pre-wrap;
     word-break: break-word;
     transition: all 0.15s ease-in-out;
+    max-height: 300px;
+    overflow-y: auto;
 
     /* Syntax highlighting classes for better code presentation */
     .keyword {

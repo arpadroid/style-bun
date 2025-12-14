@@ -1,6 +1,6 @@
 # @arpadroid/style-bun
 
-Style Bun is a powerful and flexible bundler designed for scalability and developer experience in theme-based applications with automatic compilation, minification, and live reload support.
+Style Bun is a powerful and flexible stylesheet bundler. Designed with scalability and developer experience in mind, it supports theme-based applications with automatic compilation, minification, and live reload.
 
 ## ✨ Key Features
 

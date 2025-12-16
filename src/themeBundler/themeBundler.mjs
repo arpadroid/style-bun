@@ -157,19 +157,22 @@ class ThemeBundler {
      */
     async bundle(minify = false) {
         const { verbose } = this._config || {};
+        // DEBOUNCING
         if (this.timeout) {
-            // DEBOUNCING
             verbose && console.log('ThemeBundler =>', 'Debouncing theme bundle: ', this.themeName);
             return false;
         }
-        verbose && console.info('Compiling CSS theme:', this.themeName);
         this.debounce();
+
+        verbose && console.info('Compiling CSS theme:', this.themeName);
+
         const { styles, targetFile, result } = await this.writeStyles();
         let css = styles;
+
         let minifiedTargetFile = this.getMinifiedTargetFile();
         if (targetFile && this.extension === 'scss') {
             if (!this.hasSassSupport()) {
-                console.warn('⚠️  SCSS files detected but \'sass\' is not installed. Run: npm install sass');
+                console.warn("⚠️  SCSS files detected but 'sass' is not installed. Run: npm install sass");
                 console.warn('   Treating SCSS files as CSS for now.');
                 css = styles;
             } else {
@@ -187,6 +190,7 @@ class ThemeBundler {
             });
             fs.writeFileSync(minifiedTargetFile, code);
         }
+
         await this.exportBundle();
         return result;
     }
@@ -305,7 +309,7 @@ class ThemeBundler {
     getFiles() {
         const commonThemeFile = this.getCommonThemeFile();
         const includes = this.getIncludes();
-        
+
         const patternFiles = this.getPatternFiles();
         return [commonThemeFile, ...includes, ...patternFiles]
             .filter(file => typeof file === 'string' && fs.existsSync(file))

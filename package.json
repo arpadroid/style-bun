@@ -14,7 +14,7 @@
     "keywords": [
         "Style sheet bundler",
         "SCSS bundler",
-        "CSS themes", 
+        "CSS themes",
         "LiveReload",
         "CSS productivity",
         "Theme bundler"
@@ -28,19 +28,19 @@
         "url": "https://github.com/arpadroid/style-bun/issues"
     },
     "scripts": {
-        "start": "npm run demo",
-        "dev": "npm run demo",
-        "demo": "npm run build:dev & npm run start:demo",
-        "start:demo": "browser-sync start --server demo/css --files 'demo/**/*' --port 8080 --startPath /demo.html --no-notify",
-        "build": "node ./demo/css/bundle.js --mode=production --verbose=true",
         "build:dev": "node ./demo/css/bundle.js",
-        "test": "jest",
-        "test:watch": "jest --watch",
-        "test:coverage": "jest --coverage",
-        "lint": "eslint src/**/*.{js,mjs}",
-        "clean": "rm -rf ./dist ./node_modules package-lock.json",
+        "build": "node ./demo/css/bundle.js --mode=production --verbose=true",
         "clean:install": "npm run clean && npm install",
-        "prepack": "npm run test && npm run lint && npm run build"
+        "clean": "rm -rf ./dist ./node_modules package-lock.json",
+        "demo": "npm run build:dev & npm run start:demo",
+        "dev": "npm run demo",
+        "lint": "eslint src/**/*.{js,mjs}",
+        "prepack": "npm run test && npm run lint && npm run build",
+        "start:demo": "browser-sync start --server demo/css --files 'demo/**/*' --port 8080 --startPath /demo.html --no-notify",
+        "start": "npm run demo",
+        "test:coverage": "jest --coverage",
+        "test:watch": "jest --watch",
+        "test": "jest"
     },
     "license": "MIT",
     "engines": {

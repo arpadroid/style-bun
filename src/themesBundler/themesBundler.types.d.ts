@@ -6,7 +6,7 @@ import { ThemeBundlerConfigType } from '../themeBundler/themeBundler.types.js';
 export interface ThemesBundlerConfigType {
     /**
      * @property {ThemeBundlerConfigType[]} themes - An array of ThemeBundlerConfigType configurations to define your themes.
-     * Check the implementation in demo/css/bundle.js.
+     * Check the implementation in demo/bundle.js.
      * It is only required to define a path property for each of them.
      * E.g. themes: [{ path: '/../src/themes/default' }, { path: '/../src/themes/dark' }]
      */
@@ -16,7 +16,7 @@ export interface ThemesBundlerConfigType {
      * @property {string[]} patterns - A set of absolute glob file patterns to be used when looking for theme files in other directories.
      * Note these external files need to be named as follows to be recognized as theme files:
      * [filename].[themeName].[extension]  e.g. 'my-stylesheet.default.css, my-stylesheet.dark.css'.
-     * Check the implementation in demo/css/bundle.js.
+     * Check the implementation in demo/bundle.js.
      * Those patterns are used to find the theme files in external directories.
      * They will pick up any files in any subdirectories as well so you are free to structure your code as you please.
      */

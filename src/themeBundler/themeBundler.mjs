@@ -22,6 +22,11 @@ const VERBOSE = argv.verbose;
 class ThemeBundler {
     /** @type {import('chokidar').FSWatcher[]} */
     watchers = [];
+
+    ///////////////////////////
+    // #region Initialization
+    //////////////////////////
+
     /**
      * This class bundles and watches themes.
      * @param {ThemeBundlerConfigType} config
@@ -30,49 +35,6 @@ class ThemeBundler {
         this.setConfig(config);
         /** @type {Promise<boolean>} */
         this.promise = this._initialize();
-    }
-
-    /**
-     * Sets the config.
-     * @param {ThemeBundlerConfigType} config
-     */
-    setConfig(config = {}) {
-        /** @type {ThemeBundlerConfigType} */
-        this._config = Object.assign(this.getDefaultConfig(), config);
-    }
-
-    /**
-     * Returns default config.
-     * @returns {ThemeBundlerConfigType}
-     */
-    getDefaultConfig() {
-        return {
-            extension: 'css',
-            patterns: [],
-            includes: [],
-            verbose: VERBOSE
-        };
-    }
-
-    /**
-     * Checks if SCSS support is available.
-     * @returns {boolean}
-     */
-    hasSassSupport() {
-        try {
-            require.resolve('sass');
-            return true;
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Returns the path to the config file.
-     * @returns {string}
-     */
-    getConfigFile() {
-        return PATH.normalize(`${this.path}/${this.themeName}.config.json`);
     }
 
     /**
@@ -95,43 +57,41 @@ class ThemeBundler {
         return true;
     }
 
-    /**
-     * Sets the base theme.
-     * @param {string} baseTheme - The path to the base theme.
-     */
-    setBaseTheme(baseTheme) {
-        const baseThemePath = PATH.resolve(baseTheme);
-        if (!fs.existsSync(baseThemePath)) {
-            console.log(`ThemeBundler => Base theme does not exist: ${baseThemePath}`);
-        }
-        this.baseTheme = new ThemeBundler({
-            path: baseThemePath,
-            extension: this.extension
-        });
-    }
-
-    /**
-     * Sets the path to the theme.
-     * @param {string} path - The path to the theme.
-     * @throws {Error} - If the path is not a string or the path is not a directory.
-     */
-    setPath(path = cwd) {
-        if (typeof path !== 'string' || !fs.lstatSync(path).isDirectory()) {
-            console.log(`ThemeBundler => Invalid path in theme config ${this.themeName}: "${path}"`);
-        }
-        /** @type {string | undefined} path */
-        this.path = path;
-    }
-
     async _loadFileConfig() {
         const configFile = this.getConfigFile();
         if (configFile && !fs.existsSync(configFile)) {
             console.log(`ThemeBundler => Config file not found for theme '${this.themeName}': ` + configFile);
             return Promise.resolve({});
         }
-        // const payload = await fs.readFileSync(configFile);
         const payload = (await fs.readFileSync(configFile)).toString();
         return Promise.resolve(JSON.parse(payload));
+    }
+
+    // #endregion Initialization
+
+    ////////////////
+    // #region Get
+    ///////////////
+
+    /**
+     * Returns default config.
+     * @returns {ThemeBundlerConfigType}
+     */
+    getDefaultConfig() {
+        return {
+            extension: 'css',
+            patterns: [],
+            includes: [],
+            verbose: VERBOSE
+        };
+    }
+
+    /**
+     * Returns the path to the config file.
+     * @returns {string}
+     */
+    getConfigFile() {
+        return PATH.normalize(`${this.path}/${this.themeName}.config.json`);
     }
 
     /**
@@ -151,6 +111,221 @@ class ThemeBundler {
     }
 
     /**
+     * Returns all the theme files.
+     * @returns {string[]}
+     */
+    getFiles() {
+        const commonThemeFile = this.getCommonThemeFile();
+        const includes = this.getIncludes();
+
+        const patternFiles = this.getPatternFiles();
+        return [commonThemeFile, ...includes, ...patternFiles]
+            .filter(file => typeof file === 'string' && fs.existsSync(file))
+            .filter(item => typeof item !== 'undefined');
+    }
+
+    /**
+     * Returns the stylesheet includes defined in the theme config.
+     * @returns {string[]}
+     */
+    getIncludes() {
+        return (this._fileConfig?.includes ?? []).map((/** @type {string} */ include) =>
+            PATH.join(this.path || '', `${include}.${this.extension}`)
+        );
+    }
+
+    /**
+     * Returns the CSS content of a file.
+     * @param {string} file
+     * @returns {string | undefined}
+     */
+    getCSS(file) {
+        let css = '';
+        if (file !== this._config?.commonThemeFile && file.endsWith(`.bundled.${this.extension}`)) {
+            return css;
+        }
+        const fileContent = fs.readFileSync(file, 'utf8');
+        if (!fileContent || !fileContent.length) {
+            if (this._config?.verbose) {
+                console.log('no CSS found in file:' + file);
+            }
+            return;
+        }
+        if (MODE === 'development') {
+            css += `\r\n/*\r\n File: ${file}  \r\n*/\r\n`;
+        }
+        css += fileContent;
+        return css;
+    }
+
+    /**
+     * Returns the common theme file path.
+     * @returns {string | undefined}
+     */
+    getCommonThemeFile() {
+        if (this.getName() === 'common') {
+            return undefined;
+        }
+        const file = this._config?.commonThemeFile;
+        if (file && fs.existsSync(file) && !fs.lstatSync(file).isFile()) {
+            console.log(`ThemeBundler => common theme file does not exist ${file}.`);
+            return undefined;
+        }
+        return file;
+    }
+
+    /**
+     * Returns the target file where the un-minified styles will be saved.
+     * @returns {string}
+     */
+    getTargetFile() {
+        return (
+            this._config?.target ?? PATH.normalize(`${this.path}/${this.themeName}.bundled.${this.extension}`)
+        );
+    }
+
+    /**
+     * Returns the target file where the minified styles will be saved.
+     * @returns {string}
+     */
+    getMinifiedTargetFile() {
+        return (
+            this._config?.minifiedTarget ??
+            PATH.normalize(`${this.path}/${this.themeName}.min.${this.extension}`)
+        );
+    }
+
+    /**
+     * Returns all the files that match the patterns defined in the theme config.
+     * @returns {string[]}
+     */
+    getPatternFiles() {
+        /** @type {string[]} */
+        let files = [];
+        this.getPatterns().forEach(pattern => {
+            files = files.concat(
+                glob.sync(pattern, {
+                    cwd: this.path,
+                    absolute: true,
+                    ignore: ['**/.git/**', '**/node_modules/**']
+                })
+            );
+        });
+
+        return files;
+    }
+
+    /**
+     * Returns the file patterns defined in the theme config.
+     * @param {boolean} addExtension
+     * @returns {string[]}
+     */
+    getPatterns(addExtension = true) {
+        return this._config?.patterns?.map(pattern => this.normalizePattern(pattern, addExtension)) ?? [];
+    }
+
+    /**
+     * Checks if SCSS support is available.
+     * @returns {boolean}
+     */
+    hasSassSupport() {
+        try {
+            require.resolve('sass');
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    // #endregion Get
+
+    //////////////////
+    // #region Set
+    //////////////////
+
+    /**
+     * Sets the base theme.
+     * @param {string} baseTheme - The path to the base theme.
+     */
+    setBaseTheme(baseTheme) {
+        const baseThemePath = PATH.resolve(baseTheme);
+        if (!fs.existsSync(baseThemePath)) {
+            console.log(`ThemeBundler => Base theme does not exist: ${baseThemePath}`);
+        }
+        this.baseTheme = new ThemeBundler({
+            path: baseThemePath,
+            extension: this.extension
+        });
+    }
+
+    /**
+     * Sets the config.
+     * @param {ThemeBundlerConfigType} config
+     */
+    setConfig(config = {}) {
+        /** @type {ThemeBundlerConfigType} */
+        this._config = Object.assign(this.getDefaultConfig(), config);
+    }
+
+    /**
+     * Sets the path to the theme.
+     * @param {string} path - The path to the theme.
+     * @throws {Error} - If the path is not a string or the path is not a directory.
+     */
+    setPath(path = cwd) {
+        if (typeof path !== 'string' || !fs.lstatSync(path).isDirectory()) {
+            console.log(`ThemeBundler => Invalid path in theme config ${this.themeName}: "${path}"`);
+        }
+        /** @type {string | undefined} path */
+        this.path = path;
+    }
+
+    // #endregion Set
+
+    //////////////////////
+    // #region Helpers
+    /////////////////////
+
+    /**
+     * Debounces the bundle method.
+     */
+    debounce() {
+        this.timeout = setTimeout(() => {
+            clearTimeout(this.timeout);
+            this.timeout = null;
+        }, 100);
+    }
+
+    /**
+     * Appends the theme name sub-extension and file extension to a pattern.
+     * @param {string} pattern
+     * @param {boolean} addExtension
+     * @returns {string}
+     */
+    normalizePattern(pattern, addExtension = true) {
+        if (pattern.indexOf('{cwd}') !== -1) {
+            pattern = pattern.replace('{cwd}', cwd);
+        }
+
+        if (pattern[0] !== '/' && !PATH.isAbsolute(pattern)) {
+            pattern = PATH.normalize(`${this.path}/${pattern}`);
+        }
+        if (!pattern.endsWith('*') && pattern.indexOf('**') === -1) {
+            pattern += '/**/*';
+        }
+        if (addExtension) {
+            pattern += `.${this.themeName}.${this.extension}`;
+        }
+        return pattern;
+    }
+
+    // #endregion Helpers
+
+    /////////////////////
+    // #region Bundling
+    ////////////////////
+
+    /**
      * Bundles the theme into a stylesheet.
      * @param {boolean} minify
      * @returns {Promise<boolean>}
@@ -165,7 +340,6 @@ class ThemeBundler {
         this.debounce();
 
         verbose && console.info('Compiling CSS theme:', this.themeName);
-
         const { styles, targetFile, result } = await this.writeStyles();
         let css = styles;
 
@@ -263,16 +437,6 @@ class ThemeBundler {
     }
 
     /**
-     * Debounces the bundle method.
-     */
-    debounce() {
-        this.timeout = setTimeout(() => {
-            clearTimeout(this.timeout);
-            this.timeout = null;
-        }, 100);
-    }
-
-    /**
      * Merges all the theme files contents into a single string.
      * @returns {Promise<string>}
      */
@@ -280,7 +444,7 @@ class ThemeBundler {
         this.css = '';
         this.files = this.getFiles();
         if (this.baseTheme) {
-            this.css += await this.getBaseTheme();
+            this.css += await this.bundleBaseTheme();
         }
         this.files?.forEach(file => {
             const css = this.getCSS(file);
@@ -295,75 +459,11 @@ class ThemeBundler {
      * Bundles and returns the base theme contents.
      * @returns {Promise<string>}
      */
-    async getBaseTheme() {
+    async bundleBaseTheme() {
         await this.baseTheme?.bundle();
         const targetFile = this.baseTheme?.getTargetFile();
         if (!targetFile) return '';
         return await fs.readFileSync(targetFile).toString();
-    }
-
-    /**
-     * Returns all the theme files.
-     * @returns {string[]}
-     */
-    getFiles() {
-        const commonThemeFile = this.getCommonThemeFile();
-        const includes = this.getIncludes();
-
-        const patternFiles = this.getPatternFiles();
-        return [commonThemeFile, ...includes, ...patternFiles]
-            .filter(file => typeof file === 'string' && fs.existsSync(file))
-            .filter(item => typeof item !== 'undefined');
-    }
-
-    /**
-     * Returns the common theme file path.
-     * @returns {string | undefined}
-     */
-    getCommonThemeFile() {
-        if (this.getName() === 'common') {
-            return undefined;
-        }
-        const file = this._config?.commonThemeFile;
-        if (file && fs.existsSync(file) && !fs.lstatSync(file).isFile()) {
-            console.log(`ThemeBundler => common theme file does not exist ${file}.`);
-            return undefined;
-        }
-        return file;
-    }
-
-    /**
-     * Returns the stylesheet includes defined in the theme config.
-     * @returns {string[]}
-     */
-    getIncludes() {
-        return (this._fileConfig?.includes ?? []).map((/** @type {string} */ include) =>
-            PATH.join(this.path || '', `${include}.${this.extension}`)
-        );
-    }
-
-    /**
-     * Returns the CSS content of a file.
-     * @param {string} file
-     * @returns {string | undefined}
-     */
-    getCSS(file) {
-        let css = '';
-        if (file !== this._config?.commonThemeFile && file.endsWith(`.bundled.${this.extension}`)) {
-            return css;
-        }
-        const fileContent = fs.readFileSync(file, 'utf8');
-        if (!fileContent || !fileContent.length) {
-            if (this._config?.verbose) {
-                console.log('no CSS found in file:' + file);
-            }
-            return;
-        }
-        if (MODE === 'development') {
-            css += `\r\n/*\r\n File: ${file}  \r\n*/\r\n`;
-        }
-        css += fileContent;
-        return css;
     }
 
     /**
@@ -379,158 +479,6 @@ class ThemeBundler {
         const sassPath = PATH.resolve('node_modules/.bin/sass');
         const cmd = `"${sassPath}" "${scssFile}" "${cssFile}"`;
         return execSync(cmd).toString();
-    }
-
-    /**
-     * Returns the target file where the un-minified styles will be saved.
-     * @returns {string}
-     */
-    getTargetFile() {
-        return (
-            this._config?.target ?? PATH.normalize(`${this.path}/${this.themeName}.bundled.${this.extension}`)
-        );
-    }
-
-    /**
-     * Returns the target file where the minified styles will be saved.
-     * @returns {string}
-     */
-    getMinifiedTargetFile() {
-        return (
-            this._config?.minifiedTarget ??
-            PATH.normalize(`${this.path}/${this.themeName}.min.${this.extension}`)
-        );
-    }
-
-    /**
-     * Returns all the files that match the patterns defined in the theme config.
-     * @returns {string[]}
-     */
-    getPatternFiles() {
-        /** @type {string[]} */
-        let files = [];
-        this.getPatterns().map(
-            pattern =>
-                (files = files.concat(
-                    glob.sync(pattern, {
-                        cwd: this.path,
-                        absolute: true,
-                        ignore: ['**/.git/**', '**/node_modules/**']
-                    })
-                ))
-        );
-        return files;
-    }
-
-    /**
-     * Returns the file patterns defined in the theme config.
-     * @param {boolean} addExtension
-     * @returns {string[]}
-     */
-    getPatterns(addExtension = true) {
-        return this._config?.patterns?.map(pattern => this.applyPattern(pattern, addExtension)) ?? [];
-    }
-
-    /**
-     * Appends the theme name sub-extension and file extension to a pattern.
-     * @param {string} pattern
-     * @param {boolean} addExtension
-     * @returns {string}
-     */
-    applyPattern(pattern, addExtension = true) {
-        if (pattern.indexOf('{cwd}/') === 0) {
-            pattern = pattern.replace('{cwd}', cwd);
-        }
-        if (pattern.indexOf('../') === 0) {
-            const path = `${this.path}/${pattern}`;
-            pattern = PATH.resolve(path);
-        }
-        if (addExtension) {
-            pattern += `.${this.themeName}.${this.extension}`;
-        }
-        return pattern;
-    }
-
-    /**
-     * Watches the theme files for changes.
-     * @param {StyleUpdateCallbackType} [callback]
-     * @param {boolean} [bundle]
-     */
-    async watch(callback, bundle = true) {
-        if (this.baseTheme) {
-            this.baseTheme.watch(() => this.bundle(), false);
-        }
-        this.watchPatterns(bundle, callback);
-        this.path && this.watchPath(this.path, bundle, callback);
-    }
-
-    /**
-     * Watches the theme path for changes and re-bundles the theme.
-     * @param {string} path - The path to watch.
-     * @param {boolean} bundle - Whether to bundle the theme after a change.
-     * @param {StyleUpdateCallbackType} [callback] - The callback to execute after a change.
-     */
-    watchPath(path, bundle = true, callback) {
-        this.watcher = chokidar.watch(path, {
-            ignored: /node_modules/,
-            persistent: true
-        });
-        this.watchers.push(this.watcher);
-
-        this.watcher.on('change', async filePath => {
-            const bundledFile = `${this.themeName}.bundled.${this.extension}`;
-            const fileName = PATH.basename(filePath);
-            if (
-                fileName &&
-                ![bundledFile].includes(fileName) &&
-                PATH.extname(filePath) === `.${this.extension}`
-            ) {
-                if (bundle) {
-                    await this.bundle();
-                }
-                if (typeof callback === 'function') {
-                    callback(fileName, 'change');
-                }
-            }
-        });
-    }
-
-    /**
-     * Watches the theme patterns for changes and re-bundles the theme.
-     * @param {boolean} bundle - Whether to bundle the theme after a change.
-     * @param {StyleUpdateCallbackType} [callback] - The callback to execute after a change.
-     */
-    watchPatterns(bundle = true, callback) {
-        const patterns = this.getPatterns(false);
-        if (!Array.isArray(patterns)) {
-            return;
-        }
-        patterns.forEach(pattern => this.watchPattern(pattern, callback, bundle));
-    }
-
-    /**
-     * Watches the given pattern path for changes and bundles the theme.
-     * @param {string} pattern
-     * @param {StyleUpdateCallbackType} [callback]
-     * @param {boolean} [bundle]
-     */
-    watchPattern(pattern, callback, bundle = true) {
-        const path = pattern.replace('/**/*', '').replace('/*', '');
-        if (!fs.existsSync(path)) return;
-        const watcher = chokidar.watch(path, {
-            ignored: /node_modules/,
-            persistent: true
-        });
-        this.watchers.push(watcher);
-
-        watcher.on('change', async filePath => {
-            const ext = PATH.extname(filePath).slice(1);
-            const subExt = PATH.basename(filePath).split('.')[1];
-            if (this.extension === ext && subExt === this.themeName) {
-                bundle && (await this.bundle());
-                typeof callback === 'function' && callback(PATH.relative(path, filePath), 'change');
-            }
-        });
     }
 
     /**
@@ -555,10 +503,110 @@ class ThemeBundler {
             }
         });
 
+        this.clearWatchers();
+    }
+
+    clearWatchers() {
         this.watchers.forEach(watcher => {
             watcher?.close();
         });
+        this.watchers = [];
     }
+
+    // #endregion Bundling
+
+    /////////////////////
+    // #region Watch
+    ////////////////////
+
+    /**
+     * Watches the theme files for changes.
+     * @param {StyleUpdateCallbackType} [callback]
+     * @param {boolean} [bundle]
+     * @param {boolean} [minify]
+     */
+    async watch(callback, bundle = true, minify = false) {
+        if (this.baseTheme) {
+            this.baseTheme.watch(() => this.bundle(minify), false);
+        }
+        this.watchPatterns(bundle, minify, callback);
+        this.path && this.watchPath(this.path, bundle, minify, callback);
+    }
+
+    /**
+     * Watches the theme path for changes and re-bundles the theme.
+     * @param {string} path - The path to watch.
+     * @param {boolean} bundle - Whether to bundle the theme after a change.
+     * @param {boolean} [minify] - Whether to minify the theme after a change.
+     * @param {StyleUpdateCallbackType} [callback] - The callback to execute after a change.
+     */
+    watchPath(path, bundle = true, minify = false, callback) {
+        this.watcher = chokidar.watch(path, {
+            ignored: /node_modules/,
+            persistent: true
+        });
+        this.watchers.push(this.watcher);
+
+        this.watcher.on('change', async filePath => {
+            const bundledFile = `${this.themeName}.bundled.${this.extension}`;
+            const fileName = PATH.basename(filePath);
+            if (
+                !filePath.endsWith('.min.css') &&
+                fileName &&
+                ![bundledFile].includes(fileName) &&
+                PATH.extname(filePath) === `.${this.extension}`
+            ) {
+                if (bundle) {
+                    await this.bundle(minify);
+                }
+                if (typeof callback === 'function') {
+                    callback(fileName, 'change');
+                }
+            }
+        });
+    }
+
+    /**
+     * Watches the theme patterns for changes and re-bundles the theme.
+     * @param {boolean} bundle - Whether to bundle the theme after a change.
+     * @param {boolean} [minify] - Whether to minify the theme after a change.
+     * @param {StyleUpdateCallbackType} [callback] - The callback to execute after a change.
+     */
+    watchPatterns(bundle = true, minify = false, callback) {
+        const patterns = this.getPatterns(false);
+        if (!Array.isArray(patterns)) {
+            return;
+        }
+        patterns.forEach(pattern => this.watchPattern(pattern, callback, bundle, minify));
+    }
+
+    /**
+     * Watches the given pattern path for changes and bundles the theme.
+     * @param {string} pattern
+     * @param {StyleUpdateCallbackType} [callback]
+     * @param {boolean} [bundle]
+     * @param {boolean} [minify]
+     */
+    watchPattern(pattern, callback, bundle = true, minify = false) {
+        const path = pattern.replace('/**/*', '').replace('/*', '');
+        if (!fs.existsSync(path)) return;
+        const watcher = chokidar.watch(path, {
+            ignored: /node_modules/,
+            persistent: true
+        });
+        this.watchers.push(watcher);
+
+        watcher.on('change', async filePath => {
+            const ext = PATH.extname(filePath).slice(1);
+            const subExt = PATH.basename(filePath).split('.')[1];
+            if (this.extension === ext && subExt === this.themeName) {
+                bundle && (await this.bundle(minify));
+                typeof callback === 'function' && callback(PATH.relative(path, filePath), 'change');
+            }
+        });
+    }
+
+    // #endregion Watch
 }
 
 export default ThemeBundler;

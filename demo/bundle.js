@@ -5,14 +5,14 @@
  * E.g. `node ./scripts/bundle.js --mode=production`.
  * @typedef {import('../../src/ThemeBundlerConfigType').ThemeBundlerConfigType} ThemeBundlerConfigType
  */
-import ThemesBundler from '../../src/themesBundler/themesBundler.mjs';
+import ThemesBundler from '../src/themesBundler/themesBundler.mjs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
 const argv = yargs(hideBin(process.argv)).argv;
 const mode = argv.mode === 'production' ? 'production' : 'development';
 const cwd = process.cwd();
-const basePath = cwd + '/demo/css/themes';
+const basePath = cwd + '/demo/themes';
 // We instantiate the themes bundler.
 const bundler = new ThemesBundler({
     themes: [
@@ -21,7 +21,7 @@ const bundler = new ThemesBundler({
         { path: basePath + '/desktop' },
         { path: basePath + '/dark' }
     ],
-    patterns: [cwd + '/demo/css/components/**/*', cwd + '/demo/css/pages/**/*'],
+    patterns: [cwd + '/demo/components/**/*', cwd + '/demo/pages/**/*'],
     minify: mode === 'production',
     commonThemePath: basePath + '/common'
 });

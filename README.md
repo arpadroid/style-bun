@@ -1,11 +1,17 @@
 # @arpadroid/style-bun
 
-Style Bun is a powerful and flexible stylesheet bundler. Designed with scalability and developer experience in mind, it supports theme-based applications with automatic compilation, minification, and live reload.
+![version](https://img.shields.io/badge/version-1.0.0-lightblue)
+![node version](https://img.shields.io/badge/node-%3E%3D16.0.0-blue)
+![npm version](https://img.shields.io/badge/npm-%3E%3D8.0.0-red)
+
+> Style Bun is a powerful and flexible stylesheet bundler, designed for scalability, maintainability and developer experience, it supports theme-based applications with automatic compilation, minification, and live reload.
+
+**Quick Links:** [Changelog](CHANGELOG.md) | [API Reference](API.md) | [Contributing](#contributing)
 
 ## ✨ Key Features
 
 - 🎨 **Multi-Theme Support** - Bundle multiple themes simultaneously (light/dark, mobile/desktop) with easy toggling for optimal performance.
-- 🔧 **Amazing Developer Experience** - Reduces complexity and cognitive load when working with large, theme-based applications. Enhances DX with live reload and no loss of state.
+- 🔧 **Great DX** - Enhances developer experience, reduces cognitive load, improves maintainability and streamlines development,
 - 📁 **Modular Architecture** - Import stylesheets from anywhere in your project with loose coupling and separation of concerns.
 - ⚡ **Lightning Fast Performance** - Built with LightningCSS for optimal speed and reduced browser load.
 - 🪶 **Ultra-Lightweight & Zero Config** - Minimal dependencies and works out-of-the-box with sensible defaults.
@@ -13,11 +19,6 @@ Style Bun is a powerful and flexible stylesheet bundler. Designed with scalabili
 - 🌍 **Framework Agnostic** - Works seamlessly with any web application without framework dependencies.
 
 ## 🚀 Quick Start
-
-### Prerequisites
-
-- **Node.js** >= 16.0.0
-- **npm** >= 8.0.0
 
 ### Installation
 
@@ -81,6 +82,192 @@ bundler.promise.then(async () => {
 });
 ```
 
+## 📐 How Theme Bundling Works
+
+> **💡 Key Concept:** Each theme produces a **single optimized CSS file** by merging stylesheets from two sources.
+
+### 🎯 The Two-Source Approach
+
+Style Bun collects and merges stylesheets from two locations to create one unified CSS file per theme:
+
+#### 1️⃣ Theme Directory Files (via `includes` array)
+
+Define explicit files in your theme's config to control **compilation order** and create the foundation:
+
+**Example: `themes/dark/dark.config.json`**
+
+```json
+{
+    "includes": [
+        "vars/colors", // ← Compiled FIRST
+        "vars/typography", // ← Then this
+        "components/buttons" // ← Then this
+    ]
+}
+```
+
+**Result:** Variables load before components that use them. No CSS import HTTP requests! 🚀
+
+#### 2️⃣ Pattern-Matched Files (via `patterns` array)
+
+Automatically discover component-specific theme files across your project:
+
+**File Structure:**
+
+```
+components/
+  button/
+    button.js
+    button.default.css  ← Found by pattern matching!
+    button.dark.css     ← Found by pattern matching!
+  card/
+    card.js
+    card.default.css    ← Found by pattern matching!
+    card.dark.css       ← Found by pattern matching!
+```
+
+**Bundler Config:**
+
+```javascript
+const bundler = new ThemesBundler({
+    themes: [{ path: './themes/default' }, { path: './themes/dark' }],
+    patterns: ['./components'] // ← Scans for *.default.css and *.dark.css
+});
+```
+
+### 🔄 The Merge Process
+
+```
+┌─────────────────────────────────────────┐
+│  DARK THEME BUNDLING                    │
+├─────────────────────────────────────────┤
+│                                         │
+│  📁 Theme Directory (includes):         │
+│    ✓ vars/colors.css                    │
+│    ✓ vars/typography.css                │
+│    ✓ components/buttons.css             │
+│                                         │
+│  ➕ MERGED WITH                         │
+│                                         │
+│  🔍 Pattern-Matched Files:              │
+│    ✓ components/button/button.dark.css  │
+│    ✓ components/card/card.dark.css      │
+│    ✓ pages/home/home.dark.css           │
+│                                         │
+│  ⬇                                      │
+│                                         │
+│  📦 Single Output File:                 │
+│    → themes/dark/dark.bundled.css       │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### ✨ Why This Matters
+
+- **⚡ Zero HTTP Requests** - No `@import` statements means faster page loads
+- **🎯 Controlled Order** - Use `includes` to ensure variables/mixins load first
+- **🧩 Component Isolation** - Styles live next to components, not in theme folders
+- **📦 Single File Output** - Each theme = one CSS file = optimal performance
+
+### 🎨 Example: Building a Dark Theme
+
+**Project Structure:**
+
+```
+themes/
+  dark/
+    dark.config.json      ← Defines foundation files
+    vars/
+      colors.css          ← Dark theme colors
+      typography.css      ← Dark theme fonts
+components/
+  nav/
+    nav.js
+    nav.dark.css          ← Component-specific dark styles
+  hero/
+    hero.js
+    hero.dark.css         ← Component-specific dark styles
+```
+
+**themes/dark/dark.config.json:**
+
+```json
+{
+    "includes": [
+        "vars/colors", // Load colors first
+        "vars/typography" // Then typography
+    ]
+}
+```
+
+**build.js:**
+
+```javascript
+const bundler = new ThemesBundler({
+    themes: [{ path: './themes/dark' }],
+    patterns: ['./components'] // Auto-discover *.dark.css files
+});
+```
+
+**Output:**
+
+```
+✅ themes/dark/dark.bundled.css contains:
+   1. vars/colors.css           (from includes)
+   2. vars/typography.css       (from includes)
+   3. components/nav/nav.dark.css      (pattern-matched)
+   4. components/hero/hero.dark.css    (pattern-matched)
+```
+
+**Result:** One optimized file with perfect compilation order! 🎉
+
+### 🏭 Production vs Development Output
+
+Style Bun creates different output files depending on your build mode:
+
+#### Development Mode (`minify: false`)
+
+```javascript
+const bundler = new ThemesBundler({
+    themes: [{ path: './themes/dark' }],
+    minify: false // or omit (defaults to false)
+});
+```
+
+**Output:**
+
+```
+✅ themes/dark/dark.bundled.css  ← Unminified, readable, with source formatting
+```
+
+#### Production Mode (`minify: true`)
+
+```javascript
+const bundler = new ThemesBundler({
+    themes: [{ path: './themes/dark' }],
+    minify: true // Enable minification
+});
+```
+
+**Output:**
+
+```
+✅ themes/dark/dark.bundled.css  ← Unminified (for debugging)
+✅ themes/dark/dark.min.css      ← Minified (use this in production!)
+```
+
+> **📦 Production Tip:** Always use the `.min.css` file in production for optimal performance and smaller bundle sizes.
+
+**HTML Example:**
+
+```html
+<!-- Development -->
+<link rel="stylesheet" href="themes/dark/dark.bundled.css" />
+
+<!-- Production -->
+<link rel="stylesheet" href="themes/dark/dark.min.css" />
+```
+
 ## Configuration Options
 
 ### ThemesBundler Configuration
@@ -92,7 +279,7 @@ Configuration options for the main `ThemesBundler` instance:
 | `themes`          | `ThemeBundlerConfigType[]` | `[]`              | Array of theme configurations. Each theme only requires a `path` property pointing to the theme directory.                                       |
 | `patterns`        | `string[]`                 | `[]`              | Directory paths or glob patterns for finding theme files in external directories. Files must follow `[filename].[themeName].[extension]` naming. |
 | `minify`          | `boolean`                  | `false`           | Whether bundled themes should be minified. Set to `true` for production builds.                                                                  |
-| `commonThemePath` | `string`                   | `undefined`       | Path to a common theme used as base for all themes. Useful for SCSS mixins required during compilation.                                     |
+| `commonThemePath` | `string`                   | `undefined`       | Path to a common theme used as base for all themes. Useful for SCSS mixins required during compilation.                                          |
 | `watchPaths`      | `string[]`                 | `[process.cwd()]` | Paths to monitor for changes in external theme files. Defaults to current working directory if not specified.                                    |
 | `exportPath`      | `string`                   | `undefined`       | Custom export path for bundled themes.                                                                                                           |
 
@@ -101,19 +288,19 @@ Configuration options for the main `ThemesBundler` instance:
 Configuration options for individual theme config files (e.g., `default.config.json`).
 These options can be overridden when defining themes in the `ThemesBundler` array.
 
-| Property          | Type                        | Default                               | Description                                                                                      |
-| ----------------- | --------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `path`            | `string`                    | `undefined`                           | Absolute path to theme directory. Required when defining themes in ThemesBundler array.          |
-| `includes`        | `string[]`                  | `[]`                                  | Stylesheet paths to include in compilation, relative to theme directory without file extensions. |
-| `extension`       | `'css' \| 'scss'` | `'css'`                               | File extension for theme stylesheets. SCSS requires `sass` package to be installed separately. |
-| `baseTheme`       | `string`                    | `undefined`                           | Name of base theme to inherit from. Base theme contents are prepended to current theme output.   |
-| `commonThemeFile` | `string`                    | `undefined`                           | Path to common stylesheet. Set internally by ThemesBundler when `commonThemePath` is specified.  |
-| `configFile`      | `string`                    | `[themePath]/[themeName].config.json` | Absolute path to theme config file. Auto-detected if not specified.                              |
-| `target`          | `string`                    | `[themePath]/[themeName].bundled.css` | Output path for bundled CSS file (unminified, for development).                                  |
-| `minifiedTarget`  | `string`                    | `[themePath]/[themeName].min.css`     | Output path for minified CSS file (for production).                                              |
-| `patterns`        | `string[]`                  | `[]`                                  | Glob patterns passed from ThemesBundler config for finding external theme files.                 |
-| `verbose`         | `boolean`                   | `false`                               | Enable detailed logging during compilation. Useful for debugging theme issues.                   |
-| `exportPath`      | `string`                    | `undefined`                           | Custom export path for this theme's output files.                                                |
+| Property          | Type              | Default                               | Description                                                                                      |
+| ----------------- | ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `path`            | `string`          | `undefined`                           | Absolute path to theme directory. Required when defining themes in ThemesBundler array.          |
+| `includes`        | `string[]`        | `[]`                                  | Stylesheet paths to include in compilation, relative to theme directory without file extensions. |
+| `extension`       | `'css' \| 'scss'` | `'css'`                               | File extension for theme stylesheets. SCSS requires `sass` package to be installed separately.   |
+| `baseTheme`       | `string`          | `undefined`                           | Name of base theme to inherit from. Base theme contents are prepended to current theme output.   |
+| `commonThemeFile` | `string`          | `undefined`                           | Path to common stylesheet. Set internally by ThemesBundler when `commonThemePath` is specified.  |
+| `configFile`      | `string`          | `[themePath]/[themeName].config.json` | Absolute path to theme config file. Auto-detected if not specified.                              |
+| `target`          | `string`          | `[themePath]/[themeName].bundled.css` | Output path for bundled CSS file (unminified, for development).                                  |
+| `minifiedTarget`  | `string`          | `[themePath]/[themeName].min.css`     | Output path for minified CSS file (for production).                                              |
+| `patterns`        | `string[]`        | `[]`                                  | Glob patterns passed from ThemesBundler config for finding external theme files.                 |
+| `verbose`         | `boolean`         | `false`                               | Enable detailed logging during compilation. Useful for debugging theme issues.                   |
+| `exportPath`      | `string`          | `undefined`                           | Custom export path for this theme's output files.                                                |
 
 ## 🎨 Theme Toggling
 
@@ -155,7 +342,7 @@ Use CSS media queries to automatically load different themes based on screen siz
 
 Resize your browser window to see the difference!
 
-## 🛠️ Development Setup
+## �️ Development Setup
 
 If you've cloned this project from GitHub:
 
@@ -164,7 +351,7 @@ git clone https://github.com/arpadroid/style-bun.git
 cd style-bun
 npm install
 
-# Run demo with live reload
+# Run the demo server with live reload:
 npm run demo
 
 # Or run individual commands:
@@ -191,6 +378,16 @@ npm start           # Start the demo server
 - **[Jest](https://jestjs.io/)** - Testing framework
 - **[Babel Jest](https://babeljs.io/docs/babel-jest)** - ES6+ transpilation for tests
 - **[ESLint](https://eslint.org/)** - Code linting and formatting
+
+## Contributing
+
+This project has specific architectural goals. If you'd like to contribute:
+
+1. **[Open an issue](https://github.com/arpadroid/style-bun/issues/new)** describing your proposal
+2. Wait for maintainer feedback before coding
+3. PRs without prior discussion may be closed
+
+**[Bug reports](https://github.com/arpadroid/style-bun/issues/new)** are always welcome!
 
 ## License
 

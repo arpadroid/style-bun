@@ -81,9 +81,9 @@ export default [
             'node_modules/**',
             'dist/**',
             'coverage/**',
-            'demo/css/test-output/**',
-            'demo/css/themes/**/*.bundled.css',
-            'demo/css/themes/**/*.min.css'
+            'demo/test-output/**',
+            'demo/themes/**/*.bundled.css',
+            'demo/themes/**/*.min.css'
         ]
     }
 ];

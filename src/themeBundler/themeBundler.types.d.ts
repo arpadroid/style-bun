@@ -3,7 +3,7 @@ export type ThemeBundlerConfigType = {
      * @property {string} path - The absolute path to the theme directory containing all stylesheets.
      * It is NOT required via the file config [themeName].config.json.
      * It is the only required property when creating an instance of the ThemesBundler and defining the themes array.
-     * Check it out in the the sample script demo/css/bundle.js.
+     * Check it out in the the sample script demo/bundle.js.
      */
     path?: string;
 

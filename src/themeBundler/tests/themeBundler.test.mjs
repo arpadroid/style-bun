@@ -203,6 +203,69 @@ describe('ThemeBundler', () => {
             const result = theme.watchPattern('');
             expect(result).toBeUndefined();
         });
+
+        test('bundleBaseTheme handles missing target file', async () => {
+            const theme = new ThemeBundler({
+                ...defaultConfig,
+                baseTheme: path.join(themesDir, 'scss')
+            });
+            await theme.promise;
+            
+            if (!theme.baseTheme) {
+                throw new Error('Base theme not set');
+            }
+            theme.baseTheme.bundle = jest.fn().mockResolvedValue(true);
+            theme.baseTheme.getCSSTargetFile = jest.fn().mockReturnValue(null);
+        
+            const consoleSpy = jest.spyOn(console, 'error');
+            const result = await theme.bundleBaseTheme();
+            expect(consoleSpy).toHaveBeenCalledWith('NO TARGET FILE!!!');
+            expect(result).toBe('');
+            consoleSpy.mockRestore();
+            await theme.cleanup();
+        });
+
+        test('watch with baseTheme calls baseTheme.watch', async () => {
+            const darkThemePath = path.join(themesDir, 'dark');
+            const theme = new ThemeBundler({
+                ...defaultConfig,
+                path: darkThemePath,
+                baseTheme: defaultThemeDir
+            });
+            await theme.promise;
+            if (!theme.baseTheme) {
+                throw new Error('Base theme not set');
+            }
+            const baseThemeWatchSpy = jest.spyOn(theme.baseTheme, 'watch');
+            const mockCallback = jest.fn();
+            
+            await theme.watch(mockCallback, true, false);
+            
+            expect(baseThemeWatchSpy).toHaveBeenCalled();
+            
+            theme.clearWatchers();
+            theme.baseTheme?.clearWatchers();
+            await theme.cleanup();
+        });
+
+        test('watchPatterns returns early when patterns is not an array', async () => {
+            const theme = new ThemeBundler({
+                ...defaultConfig,
+                // @ts-ignore
+                patterns: null
+            });
+            await theme.promise;
+            
+            // Mock getPatterns to return a non-array value
+            // @ts-ignore
+            jest.spyOn(theme, 'getPatterns').mockReturnValue(null);
+            
+            const watchPatternSpy = jest.spyOn(theme, 'watchPattern');
+            theme.watchPatterns(true, false, jest.fn());
+            
+            expect(watchPatternSpy).not.toHaveBeenCalled();
+            await theme.cleanup();
+        });
     });
 
     // #endregion

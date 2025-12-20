@@ -128,6 +128,62 @@ describe('ThemesBundler', () => {
             expect(existsSync(invalidBundler.themes[0].getTargetFile())).toBe(true);
             await invalidBundler.cleanup();
         });
+
+        it('handles undefined config', () => {
+            // @ts-ignore
+            const bundler = new ThemesBundler(undefined);
+            expect(bundler._config).toBeDefined();
+            expect(bundler._config?.themes).toEqual([]);
+        });
+
+        it('handles null config', () => {
+            // @ts-ignore
+            const bundler = new ThemesBundler(null);
+            expect(bundler._config).toBeDefined();
+            expect(bundler._config?.themes).toEqual([]);
+        });
+
+        it('handles config without themes array', () => {
+            // @ts-ignore
+            const bundler = new ThemesBundler({ themes: null, patterns: [] });
+            expect(bundler.themes.length).toBe(0);
+        });
+
+        it('skips themes with missing path property', () => {
+            const bundler = new ThemesBundler({
+                themes: [
+                    { path: basePath + '/default' }, // @ts-ignore
+                    { name: 'invalid-no-path' }, // @ts-ignore
+                    { path: null }
+                ]
+            });
+            expect(bundler.themes.length).toBe(1);
+        });
+
+        it('handles common theme path that does not exist', () => {
+            const bundler = new ThemesBundler({
+                themes: [{ path: basePath + '/default' }],
+                commonThemePath: '/non/existent/common/path'
+            });
+            expect(bundler.commonTheme).toBeUndefined();
+        });
+
+        it('skips config assignment when values are undefined', () => {
+            const bundler = new ThemesBundler({
+                themes: [{ path: basePath + '/default' }]
+                // No patterns or exportPath
+            });
+            expect(bundler.themes[0]._config?.patterns).toEqual([]);
+        });
+
+        it('handles theme initialization without common theme', () => {
+            const bundler = new ThemesBundler({
+                themes: [{ path: basePath + '/default', patterns: ['{cwd}/demo/css'] }],
+                exportPath: outputDir + '/no-common'
+            });
+            expect(bundler.commonTheme).toBeUndefined();
+            expect(bundler.themes[0]._config?.commonThemeFile).toBeUndefined();
+        });
     });
 
     describe('Advanced Configuration', () => {
@@ -174,6 +230,22 @@ describe('ThemesBundler', () => {
             await watchBundler.watch();
 
             expect(watchBundler.commonTheme?.watchers.length).toBeGreaterThan(0);
+            await watchBundler.cleanup();
+        });
+
+        it('starts watch mode without common theme', async () => {
+            const watchBundler = new ThemesBundler({
+                themes: [{ path: basePath + '/default' }]
+                // No commonThemePath
+            });
+            await watchBundler.promise;
+            await watchBundler.bundle();
+
+            await watchBundler.watch();
+
+            // Should have watchers on theme but not commonTheme
+            expect(watchBundler.commonTheme).toBeUndefined();
+            expect(watchBundler.themes[0].watchers.length).toBeGreaterThan(0);
             await watchBundler.cleanup();
         });
 

@@ -5,7 +5,7 @@ import fs, { existsSync, readFileSync, rmSync } from 'fs';
 import path from 'path';
 import ThemeBundler from '../themeBundler.mjs';
 import { verifyOutput, demoDir, testDir, defaultThemeDir, themesDir } from './tests.util.mjs';
-import { initializeTest, commonThemeFile } from './tests.util.mjs';
+import { initializeTest, commonThemeFile, clearFileChanges } from './tests.util.mjs';
 const outputDir = path.join(testDir, 'output');
 
 const defaultConfig = {
@@ -161,6 +161,10 @@ describe('ThemeBundler', () => {
             _theme.baseTheme?.clearWatchers();
         });
 
+        afterAll(() => {
+            clearFileChanges();
+        });
+
         const changeContent = '.dummy-change{color:componentDummyColor}';
 
         it('Makes a change to a component file, verifies output files for changes and callback invocation.', async () => {
@@ -210,13 +214,13 @@ describe('ThemeBundler', () => {
                 baseTheme: path.join(themesDir, 'scss')
             });
             await theme.promise;
-            
+
             if (!theme.baseTheme) {
                 throw new Error('Base theme not set');
             }
             theme.baseTheme.bundle = jest.fn().mockResolvedValue(true);
             theme.baseTheme.getCSSTargetFile = jest.fn().mockReturnValue(null);
-        
+
             const consoleSpy = jest.spyOn(console, 'error');
             const result = await theme.bundleBaseTheme();
             expect(consoleSpy).toHaveBeenCalledWith('NO TARGET FILE!!!');
@@ -238,11 +242,11 @@ describe('ThemeBundler', () => {
             }
             const baseThemeWatchSpy = jest.spyOn(theme.baseTheme, 'watch');
             const mockCallback = jest.fn();
-            
+
             await theme.watch(mockCallback, true, false);
-            
+
             expect(baseThemeWatchSpy).toHaveBeenCalled();
-            
+
             theme.clearWatchers();
             theme.baseTheme?.clearWatchers();
             await theme.cleanup();
@@ -255,14 +259,14 @@ describe('ThemeBundler', () => {
                 patterns: null
             });
             await theme.promise;
-            
+
             // Mock getPatterns to return a non-array value
             // @ts-ignore
             jest.spyOn(theme, 'getPatterns').mockReturnValue(null);
-            
+
             const watchPatternSpy = jest.spyOn(theme, 'watchPattern');
             theme.watchPatterns(true, false, jest.fn());
-            
+
             expect(watchPatternSpy).not.toHaveBeenCalled();
             await theme.cleanup();
         });

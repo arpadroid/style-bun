@@ -5,6 +5,7 @@ import path from 'path';
 import ThemesBundler from './themesBundler.mjs';
 
 import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { clearFileChanges, fileChanges } from '../themeBundler/tests/tests.util.mjs';
 
 const testDir = path.join(process.cwd(), 'test');
 const outputDir = path.join(testDir, 'output');
@@ -283,6 +284,10 @@ describe('ThemesBundler', () => {
             await bundler.cleanup();
         });
 
+        afterAll(async () => {
+            await clearFileChanges();
+        });
+
         it('bundles and starts watch mode with bundleAndWatch', async () => {
             const result = await bundler.initialize(true);
             expect(result?.length).toBe(1);
@@ -297,7 +302,7 @@ describe('ThemesBundler', () => {
             expect(hasWatchers).toBe(false);
         });
 
-        it('triggers rebundle when common theme changes', async () => {
+        it('triggers re-bundle when common theme changes', async () => {
             await bundler.bundle();
             bundler.watch();
 
@@ -309,7 +314,9 @@ describe('ThemesBundler', () => {
             // Trigger change by modifying a common theme file
             const commonFile = path.join(basePath, 'common', 'vars.css');
             const content = await readFileSync(commonFile, 'utf8');
-            await writeFileSync(commonFile, content + '\n.common-test-change{color:blue}\n', 'utf8');
+            const change = '\n.common-test-change{color:blue}\n';
+            await writeFileSync(commonFile, content + change, 'utf8');
+            fileChanges.push({ file: commonFile, changeText: change });
 
             // Poll for the bundled file to contain the change (wait for watcher to trigger)
             const defaultTargetFile = bundler.themes[0].getTargetFile();
@@ -326,15 +333,8 @@ describe('ThemesBundler', () => {
             // Revert change
             await writeFileSync(commonFile, content, 'utf8');
 
-            // Assert the change was detected and rebundled
+            // Assert the change was detected and re-bundled
             expect(themeContent).toContain('.common-test-change{');
-        });
-    });
-
-    afterEach(async () => {
-        // Final cleanup after all tests
-        await bundler.themes.forEach(async theme => {
-            await theme.clearWatchers();
         });
     });
 });

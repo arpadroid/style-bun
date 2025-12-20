@@ -14,6 +14,9 @@ import ThemeBundler from '../themeBundler/themeBundler.mjs';
 const argv = yargs(hideBin(process.argv)).argv;
 const WATCH = argv?.watch;
 class ThemesBundler {
+    //////////////////////////////
+    // #region Initialization
+    //////////////////////////////
     /** @type {ThemeBundler[]} themes */
     themes = [];
 
@@ -30,37 +33,6 @@ class ThemesBundler {
     }
 
     /**
-     * Sets the config for ThemeBundler.
-     * @param {ThemesBundlerConfigType} config
-     */
-    setConfig(config = {}) {
-        /** @type {ThemesBundlerConfigType} */
-        this._config = Object.assign(this.getDefaultConfig(), config);
-    }
-
-    /**
-     * Returns the default config for ThemeBundler.
-     * @returns {ThemesBundlerConfigType}
-     */
-    getDefaultConfig() {
-        return {
-            themes: [],
-            minify: false,
-            patterns: [],
-            exportPath: ''
-        };
-    }
-
-    /**
-     * Gets a ThemeBundler by its name.
-     * @param {string} name
-     * @returns {ThemeBundler | undefined}
-     */
-    getTheme(name) {
-        return this.themesByName[name];
-    }
-
-    /**
      * Instantiates ThemeBundler for each theme defined in the config.
      */
     _initializeThemes() {
@@ -69,22 +41,28 @@ class ThemesBundler {
         this._initializeCommonTheme();
         const themes = this._config?.themes;
         if (Array.isArray(themes)) {
-            themes.forEach(themeConfig => {
-                if (themeConfig?.path && fs.existsSync(themeConfig?.path)) {
-                    this._initializeThemeConfig(themeConfig);
-                    const theme = new ThemeBundler(themeConfig);
-                    this.promises?.push(theme.promise);
-                    this.themesByName[theme.getName()] = theme;
-                    this.themes.push(theme);
-                } else {
-                    console.log(`Theme path ${themeConfig.path} does not exist.`);
-                }
-            });
+            themes.forEach(themeConfig => this._initializeTheme(themeConfig));
         }
         /** @type {Promise<{ themes: ThemeBundler[], value: PromiseSettledResult<boolean>[] }>} */
         this.promise = Promise.allSettled(this.promises).then(response => {
             return Promise.resolve({ themes: this.themes, value: response });
         });
+    }
+
+    /**
+     * Instantiates ThemeBundler for a specific theme defined in the config.
+     * @param {ThemeBundlerConfigType} themeConfig
+     */
+    _initializeTheme(themeConfig) {
+        if (themeConfig?.path && fs.existsSync(themeConfig?.path)) {
+            this._initializeThemeConfig(themeConfig);
+            const theme = new ThemeBundler(themeConfig);
+            this.promises?.push(theme.promise);
+            this.themesByName[theme.getName()] = theme;
+            this.themes.push(theme);
+        } else {
+            console.log(`Theme path ${themeConfig.path} does not exist.`);
+        }
     }
 
     /**
@@ -113,6 +91,49 @@ class ThemesBundler {
             config.commonThemeFile = PATH.normalize(`${path}/${themeName}.bundled.css`);
         }
     }
+
+    // #endregion Initialization
+
+    //////////////////////////////
+    // #region Get / Set
+    //////////////////////////////
+
+    /**
+     * Returns the default config for ThemeBundler.
+     * @returns {ThemesBundlerConfigType}
+     */
+    getDefaultConfig() {
+        return {
+            themes: [],
+            minify: false,
+            patterns: [],
+            exportPath: ''
+        };
+    }
+
+    /**
+     * Gets a ThemeBundler by its name.
+     * @param {string} name
+     * @returns {ThemeBundler | undefined}
+     */
+    getTheme(name) {
+        return this.themesByName[name];
+    }
+
+    /**
+     * Sets the config for ThemeBundler.
+     * @param {ThemesBundlerConfigType} config
+     */
+    setConfig(config = {}) {
+        /** @type {ThemesBundlerConfigType} */
+        this._config = Object.assign(this.getDefaultConfig(), config);
+    }
+
+    // #endregion Set
+
+    //////////////////////////////
+    // #region API
+    //////////////////////////////
 
     /**
      * Initializes the Themes Bundler.
@@ -161,13 +182,13 @@ class ThemesBundler {
      * Cleans up all bundled theme files.
      */
     async cleanup() {
-        if (this.commonTheme) {
-            await this.commonTheme.cleanup();
-        }
+        this.commonTheme && (await this.commonTheme.cleanup());
         for (const theme of this.themes) {
             await theme.cleanup();
         }
     }
+
+    // #endregion API
 }
 
 export default ThemesBundler;

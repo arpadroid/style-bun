@@ -13,7 +13,6 @@ const defaultThemeDir = path.join(themesDir, 'default');
 const outputDir = path.join(testDir, 'output');
 const scssThemeDir = path.join(themesDir, 'scss');
 describe('SCSS theme', () => {
-    // const warnSpy = jest.spyOn(console, 'warn');
     /** @type {ThemeBundler} */
     let scssTheme;
     const warnSpy = jest.spyOn(console, 'warn');

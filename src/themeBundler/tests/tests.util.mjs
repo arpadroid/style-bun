@@ -11,6 +11,9 @@ export const themesDir = join(demoDir, 'themes');
 export const defaultThemeDir = join(themesDir, 'default');
 export const outputDir = join(testDir, 'output');
 export const commonThemeFile = join(testDir, 'common.css');
+/** @type {{ file: string, changeText: string }[]} */
+const _fileChanges = [];
+export const fileChanges = _fileChanges;
 
 export const defaultConfig = {
     path: defaultThemeDir,
@@ -19,6 +22,15 @@ export const defaultConfig = {
     commonThemeFile
 };
 
+export async function clearFileChanges() {
+    for (const file of fileChanges) {
+        const content = await readFileSync(file.file, 'utf8');
+        const updatedContent = content.replace(file.changeText, '');
+        await writeFileSync(file.file, updatedContent, 'utf8');
+    }
+    fileChanges.length = 0;
+    return Promise.resolve();
+}   
 /**
  * Verifies that making changes to a file are reflected in the output files.
  * @param {ThemeBundler} theme - The ThemeBundler instance.
@@ -39,6 +51,7 @@ export const verifyOutput = async (
     spy?.mockClear();
     const originalContent = await readFileSync(changeFile, 'utf8');
     await appendFileSync(changeFile, changeText, 'utf8');
+    fileChanges.push({ file: changeFile, changeText });
 
     // Wait for the watcher to detect the change and re-bundle
     await new Promise(resolve => setTimeout(resolve, 200));

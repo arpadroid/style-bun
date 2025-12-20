@@ -1,0 +1,22 @@
+* {
+    box-sizing: border-box;
+}
+
+body,
+html {
+    height: 100%;
+    padding: $spacing-md;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: 1rem;
+    color: $text-color;
+    line-height: 1.6;
+}
+
+body {
+    background-color: $background-color;
+}
+
+.scss_button {
+    background-color: yellowgreen;
+}

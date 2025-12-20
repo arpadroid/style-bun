@@ -1,8 +1,8 @@
 node_modules/
 .vscode/
 *.bundled.css
+*.bundled.scss
 *.min.css
-*.scss
 *.less
 .tmp/
 dist/

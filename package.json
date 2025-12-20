@@ -74,7 +74,7 @@
         "globals": "^16.5.0",
         "jest": "^30.2.0",
         "prettier": "^3.0.0",
-        "sass": "^1.97.0"
+        "sass": "^1.97.1"
     },
     "dependencies": {
         "chokidar": "^5.0.0",

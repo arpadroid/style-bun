@@ -7,7 +7,7 @@
 import { glob } from 'glob';
 import PATH from 'path';
 import { execSync } from 'child_process';
-import fs from 'fs';
+import fs, { copyFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { transform } from 'lightningcss';
@@ -42,25 +42,29 @@ class ThemeBundler {
      * @returns {Promise<boolean>}
      */
     async _initialize() {
-        const { baseTheme, path, extension } = this._config || {};
+        const { baseTheme, path } = this._config || {};
         this.setPath(path);
         /** @type {string} themeName */
         this.themeName = this.path?.split(PATH.sep).pop() ?? '';
-        this._fileConfig = await this._loadFileConfig();
-        Object.assign(this._config || {}, this._fileConfig || {});
-        /** @type {'css' | 'scss' | undefined} extension */
-        this.extension = extension;
-
-        if (baseTheme) {
-            this.setBaseTheme(baseTheme);
-        }
+        await this._initializeConfig();
+        baseTheme && this.setBaseTheme(baseTheme);
         return true;
     }
 
-    async _loadFileConfig() {
+    async _initializeConfig() {
+        this.fileConfig = await this.loadFileConfig();
+        this._config = Object.assign(this._config || {}, this.fileConfig || {}) || {};
+        /** @type {'css' | 'scss' | undefined} extension */
+        this.extension = this.getExtension();
+        this._config && (this._config.extension = this.extension);
+    }
+
+    async loadFileConfig() {
         const configFile = this.getConfigFile();
         if (configFile && !fs.existsSync(configFile)) {
-            console.log(`ThemeBundler => Config file not found for theme '${this.themeName}': ` + configFile);
+            console.error(
+                `[ThemeBundler] => Config file not found for theme '${this.themeName}': ` + configFile
+            );
             return Promise.resolve({});
         }
         const payload = (await fs.readFileSync(configFile)).toString();
@@ -72,6 +76,10 @@ class ThemeBundler {
     ////////////////
     // #region Get
     ///////////////
+
+    getExtension() {
+        return this._config?.extension || 'css';
+    }
 
     /**
      * Returns default config.
@@ -129,7 +137,7 @@ class ThemeBundler {
      * @returns {string[]}
      */
     getIncludes() {
-        return (this._fileConfig?.includes ?? []).map((/** @type {string} */ include) =>
+        return (this.fileConfig?.includes ?? []).map((/** @type {string} */ include) =>
             PATH.join(this.path || '', `${include}.${this.extension}`)
         );
     }
@@ -146,9 +154,7 @@ class ThemeBundler {
         }
         const fileContent = fs.readFileSync(file, 'utf8');
         if (!fileContent || !fileContent.length) {
-            if (this._config?.verbose) {
-                console.log('no CSS found in file:' + file);
-            }
+            console.warn('no CSS found in file:' + file);
             return;
         }
         if (MODE === 'development') {
@@ -167,8 +173,8 @@ class ThemeBundler {
             return undefined;
         }
         const file = this._config?.commonThemeFile;
-        if (file && fs.existsSync(file) && !fs.lstatSync(file).isFile()) {
-            console.log(`ThemeBundler => common theme file does not exist ${file}.`);
+        if (file && !existsSync(file)) {
+            console.error(`ThemeBundler => common theme file does not exist: ${file}.`);
             return undefined;
         }
         return file;
@@ -184,15 +190,16 @@ class ThemeBundler {
         );
     }
 
+    getCSSTargetFile() {
+        return this.getTargetFile().replace(`.${this.extension}`, '.css');
+    }
+
     /**
      * Returns the target file where the minified styles will be saved.
      * @returns {string}
      */
     getMinifiedTargetFile() {
-        return (
-            this._config?.minifiedTarget ??
-            PATH.normalize(`${this.path}/${this.themeName}.min.${this.extension}`)
-        );
+        return this._config?.minifiedTarget ?? PATH.normalize(`${this.path}/${this.themeName}.min.css`);
     }
 
     /**
@@ -228,9 +235,9 @@ class ThemeBundler {
      * Checks if SCSS support is available.
      * @returns {boolean}
      */
-    hasSassSupport() {
+    hasSassSupport(packageName = 'sass') {
         try {
-            require.resolve('sass');
+            require.resolve(packageName);
             return true;
         } catch {
             return false;
@@ -248,9 +255,9 @@ class ThemeBundler {
      * @param {string} baseTheme - The path to the base theme.
      */
     setBaseTheme(baseTheme) {
-        const baseThemePath = PATH.resolve(baseTheme);
-        if (!fs.existsSync(baseThemePath)) {
-            console.log(`ThemeBundler => Base theme does not exist: ${baseThemePath}`);
+        const baseThemePath = baseTheme;
+        if (!existsSync(baseThemePath)) {
+            console.error(`ThemeBundler => Base theme does not exist: ${baseThemePath}`);
         }
         this.baseTheme = new ThemeBundler({
             path: baseThemePath,
@@ -273,9 +280,10 @@ class ThemeBundler {
      * @throws {Error} - If the path is not a string or the path is not a directory.
      */
     setPath(path = cwd) {
-        if (typeof path !== 'string' || !fs.lstatSync(path).isDirectory()) {
-            console.log(`ThemeBundler => Invalid path in theme config ${this.themeName}: "${path}"`);
+        if (typeof path !== 'string' || !fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) {
+            console.error(`[ThemeBundler] => Invalid path in theme config ${this.getName()}: "${path}"`);
         }
+
         /** @type {string | undefined} path */
         this.path = path;
     }
@@ -285,16 +293,6 @@ class ThemeBundler {
     //////////////////////
     // #region Helpers
     /////////////////////
-
-    /**
-     * Debounces the bundle method.
-     */
-    debounce() {
-        this.timeout = setTimeout(() => {
-            clearTimeout(this.timeout);
-            this.timeout = null;
-        }, 100);
-    }
 
     /**
      * Appends the theme name sub-extension and file extension to a pattern.
@@ -325,32 +323,40 @@ class ThemeBundler {
     // #region Bundling
     ////////////////////
 
+    async bundle(minify = false) {
+        if (this.bundlePromise) {
+            return this.bundlePromise;
+        } else {
+            this.bundlePromise = this._bundle(minify);
+        }
+        return this.bundlePromise.then(response => {
+            this.bundlePromise = null;
+            return Promise.resolve(response);
+        });
+    }
+
     /**
      * Bundles the theme into a stylesheet.
      * @param {boolean} minify
      * @returns {Promise<boolean>}
      */
-    async bundle(minify = false) {
+    async _bundle(minify = false) {
+        await this.promise;
         const { verbose } = this._config || {};
-        // DEBOUNCING
-        if (this.timeout) {
-            verbose && console.log('ThemeBundler =>', 'Debouncing theme bundle: ', this.themeName);
-            return false;
-        }
-        this.debounce();
 
         verbose && console.info('Compiling CSS theme:', this.themeName);
         const { styles, targetFile, result } = await this.writeStyles();
         let css = styles;
 
         let minifiedTargetFile = this.getMinifiedTargetFile();
+        let targetCSS = this.getTargetFile();
         if (targetFile && this.extension === 'scss') {
             if (!this.hasSassSupport()) {
                 console.warn("⚠️  SCSS files detected but 'sass' is not installed. Run: npm install sass");
                 console.warn('   Treating SCSS files as CSS for now.');
                 css = styles;
             } else {
-                const targetCSS = targetFile.replace('.scss', '.css');
+                targetCSS = targetFile.replace('.scss', '.css');
                 await this.scssToCss(targetFile, targetCSS);
                 css = fs.readFileSync(targetCSS, 'utf8');
                 minifiedTargetFile = minifiedTargetFile.replace('.scss', '.css');
@@ -360,7 +366,7 @@ class ThemeBundler {
             const { code } = transform({
                 code: Buffer.from(css || ''),
                 minify: true,
-                filename: this.getTargetFile()
+                filename: targetCSS
             });
             fs.writeFileSync(minifiedTargetFile, code);
         }
@@ -371,15 +377,17 @@ class ThemeBundler {
 
     /**
      * Writes the bundled styles to a file.
+     * @param {string} [styles]
      * @returns {Promise<WriteStylesReturnType>}
      */
-    async writeStyles() {
-        const styles = await this.mergeFiles();
-        if (!styles?.length) {
-            const message = `- No css found in file: ${this.themeName}`;
-            if (VERBOSE) {
-                console.log(message, this.themeName);
-            }
+    async writeStyles(styles = undefined) {
+        const { verbose } = this._config || {};
+        styles = styles ?? (await this.mergeFiles());
+        if (!styles?.trim().length) {
+            const message = '[ThemeBundler] => No CSS found in theme file';
+
+            verbose && console.warn(message, this.themeName);
+
             return Promise.resolve({ message, styles });
         }
         const targetFile = this.getTargetFile();
@@ -396,18 +404,19 @@ class ThemeBundler {
         const exportPath = this._config?.exportPath;
         if (!exportPath) return false;
         const exportDir = PATH.normalize(`${exportPath}/${this.themeName}`);
-        if (!fs.existsSync(exportDir)) {
-            fs.mkdirSync(exportDir, { recursive: true });
+        if (!existsSync(exportDir)) {
+            mkdirSync(exportDir, { recursive: true });
         }
 
         const targetFile = this.getTargetFile();
 
-        fs.existsSync(targetFile) &&
-            fs.copyFileSync(targetFile, PATH.normalize(`${exportDir}/${this.themeName}.bundled.css`));
+        if (existsSync(targetFile)) {
+            copyFileSync(targetFile, PATH.normalize(`${exportDir}/${this.themeName}.bundled.css`));
+        }
 
         const minifiedTargetFile = this.getMinifiedTargetFile();
-        if (fs.existsSync(minifiedTargetFile)) {
-            fs.copyFileSync(minifiedTargetFile, PATH.normalize(`${exportDir}/${this.themeName}.min.css`));
+        if (existsSync(minifiedTargetFile)) {
+            copyFileSync(minifiedTargetFile, PATH.normalize(`${exportDir}/${this.themeName}.min.css`));
         }
         const fontsDIR = PATH.normalize(`${this.path}/fonts`);
         const fontsExportDIR = PATH.normalize(`${exportDir}/fonts`);
@@ -425,12 +434,12 @@ class ThemeBundler {
      * @returns {Promise<boolean>}
      */
     async exportDir(origin, destination) {
-        if (fs.existsSync(origin)) {
-            if (!fs.existsSync(destination)) {
-                fs.mkdirSync(destination, { recursive: true });
+        if (existsSync(origin)) {
+            if (!existsSync(destination)) {
+                mkdirSync(destination, { recursive: true });
             }
-            fs.readdirSync(origin).forEach(file => {
-                fs.copyFileSync(`${origin}/${file}`, `${destination}/${file}`);
+            readdirSync(origin).forEach(file => {
+                copyFileSync(`${origin}/${file}`, `${destination}/${file}`);
             });
         }
         return true;
@@ -461,8 +470,11 @@ class ThemeBundler {
      */
     async bundleBaseTheme() {
         await this.baseTheme?.bundle();
-        const targetFile = this.baseTheme?.getTargetFile();
-        if (!targetFile) return '';
+        const targetFile = this.baseTheme?.getCSSTargetFile();
+        if (!targetFile) {
+            console.error('NO TARGET FILE!!!');
+            return '';
+        }
         return await fs.readFileSync(targetFile).toString();
     }
 
@@ -473,9 +485,6 @@ class ThemeBundler {
      * @returns {string}
      */
     scssToCss(scssFile, cssFile) {
-        if (!this.hasSassSupport()) {
-            throw new Error('SCSS compilation requires the sass package. Install it with: npm install sass');
-        }
         const sassPath = PATH.resolve('node_modules/.bin/sass');
         const cmd = `"${sassPath}" "${scssFile}" "${cssFile}"`;
         return execSync(cmd).toString();
@@ -487,7 +496,7 @@ class ThemeBundler {
     cleanup() {
         const name = this.themeName;
         const ext = this.extension;
-        const files = [`${name}.bundled.${ext}`, `${name}.min.css`];
+        const files = [`${name}.bundled.${ext}`, `${name}.min.css`, `${name}.bundled.css.map`];
         if (this.extension === 'scss') {
             files.push(`${this.themeName}.bundled.css`);
         }
@@ -504,6 +513,9 @@ class ThemeBundler {
         });
 
         this.clearWatchers();
+        if (this.baseTheme) {
+            this.baseTheme.cleanup();
+        }
     }
 
     clearWatchers() {
@@ -526,7 +538,9 @@ class ThemeBundler {
      * @param {boolean} [minify]
      */
     async watch(callback, bundle = true, minify = false) {
+        await this.promise;
         if (this.baseTheme) {
+            await this.baseTheme.promise;
             this.baseTheme.watch(() => this.bundle(minify), false);
         }
         this.watchPatterns(bundle, minify, callback);

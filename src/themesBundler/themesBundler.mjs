@@ -52,6 +52,15 @@ class ThemesBundler {
     }
 
     /**
+     * Gets a ThemeBundler by its name.
+     * @param {string} name
+     * @returns {ThemeBundler | undefined}
+     */
+    getTheme(name) {
+        return this.themesByName[name];
+    }
+
+    /**
      * Instantiates ThemeBundler for each theme defined in the config.
      */
     _initializeThemes() {
@@ -72,8 +81,10 @@ class ThemesBundler {
                 }
             });
         }
-        /** @type {Promise<boolean[]>} */
-        this.promise = Promise.all(this.promises);
+        /** @type {Promise<{ themes: ThemeBundler[], value: PromiseSettledResult<boolean>[] }>} */
+        this.promise = Promise.allSettled(this.promises).then(response => {
+            return Promise.resolve({ themes: this.themes, value: response });
+        });
     }
 
     /**
@@ -149,11 +160,13 @@ class ThemesBundler {
     /**
      * Cleans up all bundled theme files.
      */
-    cleanup() {
+    async cleanup() {
         if (this.commonTheme) {
-            this.commonTheme.cleanup();
+            await this.commonTheme.cleanup();
         }
-        this.themes.forEach(theme => theme.cleanup());
+        for (const theme of this.themes) {
+            await theme.cleanup();
+        }
     }
 }
 

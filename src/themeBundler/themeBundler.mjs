@@ -62,9 +62,7 @@ class ThemeBundler {
     async loadFileConfig() {
         const configFile = this.getConfigFile();
         if (configFile && !fs.existsSync(configFile)) {
-            console.error(
-                `[ThemeBundler] => Config file not found for theme '${this.themeName}': ` + configFile
-            );
+            console.error(`🚫 Config file not found for theme '${this.themeName}': ` + configFile);
             return Promise.resolve({});
         }
         const payload = (await fs.readFileSync(configFile)).toString();
@@ -154,7 +152,7 @@ class ThemeBundler {
         }
         const fileContent = fs.readFileSync(file, 'utf8');
         if (!fileContent || !fileContent.length) {
-            console.warn('no CSS found in file:' + file);
+            console.warn('⚠️  No CSS found in file:', file);
             return;
         }
         if (MODE === 'development') {
@@ -174,7 +172,7 @@ class ThemeBundler {
         }
         const file = this._config?.commonThemeFile;
         if (file && !existsSync(file)) {
-            console.error(`ThemeBundler => common theme file does not exist: ${file}.`);
+            console.error(`🚫 common theme file does not exist: ${file}.`);
             return undefined;
         }
         return file;
@@ -257,7 +255,7 @@ class ThemeBundler {
     setBaseTheme(baseTheme) {
         const baseThemePath = baseTheme;
         if (!existsSync(baseThemePath)) {
-            console.error(`ThemeBundler => Base theme does not exist: ${baseThemePath}`);
+            console.error(`🚫 Base theme does not exist: ${baseThemePath}`);
         }
         this.baseTheme = new ThemeBundler({
             path: baseThemePath,
@@ -281,7 +279,7 @@ class ThemeBundler {
      */
     setPath(path = cwd) {
         if (typeof path !== 'string' || !fs.existsSync(path) || !fs.lstatSync(path).isDirectory()) {
-            console.error(`[ThemeBundler] => Invalid path in theme config ${this.getName()}: "${path}"`);
+            console.error(`🚫 Invalid path in theme config ${this.getName()}: "${path}"`);
         }
 
         /** @type {string | undefined} path */
@@ -353,7 +351,6 @@ class ThemeBundler {
         if (targetFile && this.extension === 'scss') {
             if (!this.hasSassSupport()) {
                 console.warn("⚠️  SCSS files detected but 'sass' is not installed. Run: npm install sass");
-                console.warn('   Treating SCSS files as CSS for now.');
                 css = styles;
             } else {
                 targetCSS = targetFile.replace('.scss', '.css');
@@ -384,10 +381,8 @@ class ThemeBundler {
         const { verbose } = this._config || {};
         styles = styles ?? (await this.mergeFiles());
         if (!styles?.trim().length) {
-            const message = '[ThemeBundler] => No CSS found in theme file';
-
+            const message = '⚠️  No CSS found in theme file';
             verbose && console.warn(message, this.themeName);
-
             return Promise.resolve({ message, styles });
         }
         const targetFile = this.getTargetFile();

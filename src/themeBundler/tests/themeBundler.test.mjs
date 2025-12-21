@@ -151,11 +151,12 @@ describe('ThemeBundler', () => {
             });
             outputFile = _theme.getTargetFile();
             await _theme.watch(spy, true, true);
+            await new Promise(resolve => setTimeout(resolve, 40));
         });
 
         afterEach(async () => {
-            clearFileChanges();
             await _theme.cleanup();
+            await clearFileChanges();
         });
 
         const changeContent = '.dummy-change{color:componentDummyColor}';

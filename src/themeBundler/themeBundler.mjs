@@ -555,7 +555,6 @@ class ThemeBundler {
         }
         this.watchPatterns(bundle, minify, callback);
         this.path && this.watchPath(this.path, bundle, minify, callback);
-        await new Promise(resolve => setTimeout(resolve, 10));
     }
 
     /**

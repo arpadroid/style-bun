@@ -305,10 +305,10 @@ describe('ThemesBundler', () => {
 
         it('triggers re-bundle when common theme changes', async () => {
             await bundler.bundle();
-            bundler.watch();
+            await bundler.watch();
 
             // Wait for watchers to be set up
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 50));
             // Verify watch callback exists
             expect(bundler.commonTheme?.watchers.length).toBeGreaterThan(0);
 

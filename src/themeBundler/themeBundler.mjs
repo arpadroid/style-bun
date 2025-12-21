@@ -475,7 +475,7 @@ class ThemeBundler {
         await this.baseTheme?.bundle();
         const targetFile = this.baseTheme?.getCSSTargetFile();
         if (!targetFile) {
-            console.error('NO TARGET FILE!!!');
+            console.error('🚫 No target file found for base theme');
             return '';
         }
         return await fs.readFileSync(targetFile).toString();
@@ -555,6 +555,7 @@ class ThemeBundler {
         }
         this.watchPatterns(bundle, minify, callback);
         this.path && this.watchPath(this.path, bundle, minify, callback);
+        await new Promise(resolve => setTimeout(resolve, 10));
     }
 
     /**

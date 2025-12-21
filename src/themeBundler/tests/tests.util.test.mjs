@@ -1,8 +1,8 @@
 /**
  * @jest-environment node
  */
-import { existsSync, rmSync, unlinkSync } from 'fs';
-import { initializeTest, commonThemeFile, outputDir } from './tests.util.mjs';
+import { existsSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs';
+import { initializeTest, commonThemeFile, outputDir, clearFileChange } from './tests.util.mjs';
 
 describe('tests.util', () => {
     describe('initializeTest', () => {
@@ -39,6 +39,26 @@ describe('tests.util', () => {
 
             expect(firstRunStat).toBe(true);
             expect(secondRunStat).toBe(true);
+        });
+
+        it('uses clearFileChange to clear a file change', async () => {
+            const testFile = commonThemeFile;
+            const originalContent = await readFileSync(testFile, 'utf8');
+            const changeText = '\n/* Test Change */\n';
+
+            // Apply a change
+            await writeFileSync(testFile, originalContent + changeText, 'utf8');
+            let modifiedContent = await readFileSync(testFile, 'utf8');
+            expect(modifiedContent).toContain(changeText);
+
+            // Clear the change
+
+            await clearFileChange(testFile, changeText);
+
+            // Verify the change is cleared
+            modifiedContent = await readFileSync(testFile, 'utf8');
+            expect(modifiedContent).not.toContain(changeText);
+            expect(modifiedContent).toBe(originalContent);
         });
     });
 });

@@ -70,12 +70,13 @@ describe('ThemesBundler', () => {
             });
             await bundler.promise;
             await bundler.bundle();
-            bundler.themes.forEach(theme => {
+            for (const theme of bundler.themes) {
                 const targetFile = theme.getTargetFile();
-                expect(existsSync(targetFile)).toBe(true);
+                expect(await existsSync(targetFile)).toBe(true);
                 const minFile = theme.getMinifiedTargetFile();
-                expect(existsSync(minFile)).toBe(true);
-            });
+                expect(await existsSync(minFile)).toBe(true);
+            }
+
             await bundler.cleanup();
         });
     });

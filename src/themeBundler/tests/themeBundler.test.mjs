@@ -149,20 +149,13 @@ describe('ThemeBundler', () => {
             spy = jest.fn(() => {
                 console.log('Watch triggered');
             });
-
-            _theme.watch(spy, true, true);
-            await new Promise(resolve => setTimeout(resolve, 10));
             outputFile = _theme.getTargetFile();
+            await _theme.watch(spy, true, true);
         });
 
         afterEach(async () => {
-            await _theme.cleanup();
-            _theme.clearWatchers();
-            _theme.baseTheme?.clearWatchers();
-        });
-
-        afterAll(() => {
             clearFileChanges();
+            await _theme.cleanup();
         });
 
         const changeContent = '.dummy-change{color:componentDummyColor}';
@@ -173,7 +166,7 @@ describe('ThemeBundler', () => {
         });
 
         /**
-         * @todo Fix this test - it intermittently fails because the watcher does not always pick up the change in time.
+         * @todo Fix this flaky test - it intermittently fails because the watcher does not always pick up the change in time.
          * The issue is not related to the test itself, but rather having multiple verifyOutput calls in succession.
          */
         it('Makes a change to a theme file, verifies output files for changes and callback invocation.', async () => {
@@ -223,7 +216,9 @@ describe('ThemeBundler', () => {
 
             const consoleSpy = jest.spyOn(console, 'error');
             const result = await theme.bundleBaseTheme();
-            expect(consoleSpy).toHaveBeenCalledWith('NO TARGET FILE!!!');
+            expect(consoleSpy).toHaveBeenCalledWith(
+                expect.stringContaining('No target file found for base theme')
+            );
             expect(result).toBe('');
             consoleSpy.mockRestore();
             await theme.cleanup();

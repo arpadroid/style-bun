@@ -22,15 +22,6 @@ export const defaultConfig = {
     commonThemeFile
 };
 
-export async function clearFileChanges() {
-    for (const file of fileChanges) {
-        const content = await readFileSync(file.file, 'utf8');
-        const updatedContent = content.replace(file.changeText, '');
-        await writeFileSync(file.file, updatedContent, 'utf8');
-    }
-    fileChanges.length = 0;
-    return Promise.resolve();
-}   
 /**
  * Verifies that making changes to a file are reflected in the output files.
  * @param {ThemeBundler} theme - The ThemeBundler instance.
@@ -40,21 +31,21 @@ export async function clearFileChanges() {
  * @param {string} changeText - The text to append to the change file.
  * @param {string} [minifiedText] - The expected text in the minified output file.
  */
-export const verifyOutput = async (
+export async function verifyOutput(
     theme,
     outputFile,
     spy,
     changeFile,
     changeText,
     minifiedText = changeText
-) => {
+) {
     spy?.mockClear();
     const originalContent = await readFileSync(changeFile, 'utf8');
     await appendFileSync(changeFile, changeText, 'utf8');
     fileChanges.push({ file: changeFile, changeText });
 
     // Wait for the watcher to detect the change and re-bundle
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     // Check the change is reflected in the output file.
     const outputFileContent = await readFileSync(outputFile, 'utf8');
@@ -69,13 +60,13 @@ export const verifyOutput = async (
 
     // Remove the test change
     await writeFileSync(changeFile, originalContent, 'utf8');
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 100));
     const outputContent = await readFileSync(outputFile, 'utf8');
     expect(outputContent).not.toContain(changeText);
     const minContent = await readFileSync(minFile, 'utf8');
     expect(minContent).not.toContain(minifiedText);
     expect(spy).toHaveBeenCalledTimes(2);
-};
+}
 
 export async function initializeTest() {
     if (!existsSync(outputDir)) {
@@ -85,4 +76,25 @@ export async function initializeTest() {
     if (!existsSync(commonThemeFile)) {
         await writeFileSync(commonThemeFile, ':root { --common-theme-var: yellowgreen; }', 'utf8');
     }
+}
+
+/**
+ * Clears a specific change made to a file during testing.
+ * @param {string} file - The file to clear the change from.
+ * @param {string} change - The text that was added to the file.
+ */
+export async function clearFileChange(file, change) {
+    const content = await readFileSync(file, 'utf8');
+    const updatedContent = content.replace(change, '');
+    await writeFileSync(file, updatedContent, 'utf8');
+}
+
+export async function clearFileChanges(changes = fileChanges) {
+    for (const file of changes) {
+        const content = await readFileSync(file.file, 'utf8');
+        const updatedContent = content.replace(file.changeText, '');
+        await writeFileSync(file.file, updatedContent, 'utf8');
+    }
+    fileChanges.length = 0;
+    return Promise.resolve();
 }

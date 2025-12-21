@@ -36,9 +36,8 @@ describe('SCSS theme', () => {
 
     it('Throws a warning if an empty CSS file is found', async () => {
         expect(warnSpy).toHaveBeenCalledWith(
-            expect.stringContaining(
-                'No CSS found in file:'
-            ), expect.stringContaining('empty-button.scss.scss')
+            expect.stringContaining('No CSS found in file:'),
+            expect.stringContaining('empty-button.scss.scss')
         );
         warnSpy.mockRestore();
     });
@@ -51,6 +50,22 @@ describe('SCSS theme', () => {
         const minFile = scssTheme.getMinifiedTargetFile();
         expect(existsSync(minFile)).toBe(true);
         expect(readFileSync(minFile, 'utf8')).toContain('--primary-color:#3498db');
+    });
+
+    it('Triggers an error when trying to compile invalid SCSS', async () => {
+        const consoleSpy = jest.spyOn(console, 'error');
+        const invalidScssTheme = new ThemeBundler({
+            path: path.join(themesDir, 'scss'),
+            extension: 'scss',
+            verbose: true
+        });
+        await invalidScssTheme.promise;
+        await invalidScssTheme.scssToCss(
+            'invalid file',
+            '$color: #f.test { color: $color; } .invalid { color: ; }'
+        );
+
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to compile SCSS:'));
     });
 
     afterAll(async () => {

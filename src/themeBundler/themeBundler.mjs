@@ -6,8 +6,8 @@
  */
 import { glob } from 'glob';
 import PATH from 'path';
-import { execSync } from 'child_process';
-import fs, { copyFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
+import fs, { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'fs';
+import * as sass from 'sass';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { transform } from 'lightningcss';
@@ -65,8 +65,16 @@ class ThemeBundler {
             console.error(`🚫 Config file not found for theme '${this.themeName}': ` + configFile);
             return Promise.resolve({});
         }
-        const payload = (await fs.readFileSync(configFile)).toString();
-        return Promise.resolve(JSON.parse(payload));
+        try {
+            const payload = (await fs.readFileSync(configFile)).toString();
+            return Promise.resolve(JSON.parse(payload));
+        } catch (error) {
+            console.error(
+                `🚫 Failed to parse config file for theme '${this.themeName}': ${configFile}`,
+                error
+            );
+            return Promise.resolve({});
+        }
     }
 
     // #endregion Initialization
@@ -477,12 +485,19 @@ class ThemeBundler {
      * Converts scss to css.
      * @param {string} scssFile
      * @param {string} cssFile
-     * @returns {string}
+     * @returns {Promise<string | undefined>}
      */
-    scssToCss(scssFile, cssFile) {
-        const sassPath = PATH.resolve('node_modules/.bin/sass');
-        const cmd = `"${sassPath}" "${scssFile}" "${cssFile}"`;
-        return execSync(cmd).toString();
+    async scssToCss(scssFile, cssFile) {
+        try {
+            const result = sass.compile(scssFile);
+            await writeFileSync(cssFile, result.css);
+            return result.css;
+        } catch (error) {
+            // @ts-ignore
+            console.error(`Failed to compile SCSS: ${error?.message || 'Unknown error'}`);
+            // throw new Error('Failed to compile SCSS');
+            return undefined;
+        }
     }
 
     /**

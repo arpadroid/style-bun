@@ -3,7 +3,6 @@ import ThemeBundler from '../themeBundler.mjs';
 import { defaultConfig, demoDir, initializeTest, outputDir, themesDir } from './tests.util.mjs';
 
 describe('Error handling', () => {
-
     beforeAll(async () => {
         await initializeTest();
     });
@@ -24,6 +23,22 @@ describe('Error handling', () => {
         );
         consoleSpy.mockRestore();
         await theme.promise;
+        await theme.cleanup();
+    });
+
+    it('Throws an error if the theme configuration file is invalid', async () => {
+        const consoleSpy = jest.spyOn(console, 'error');
+        const theme = new ThemeBundler({
+            ...defaultConfig,
+            path: join(themesDir, 'invalid-config')
+        });
+
+        await theme.promise;
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Failed to parse config file for theme'),
+            expect.anything()
+        );
+        consoleSpy.mockRestore();
         await theme.cleanup();
     });
 

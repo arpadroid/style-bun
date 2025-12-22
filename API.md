@@ -1,6 +1,10 @@
-# API Reference
+<link rel="stylesheet" href="docs-styles.css">
 
-## ThemesBundler
+# 📚 API Reference
+
+> Comprehensive API documentation for Style Bun's theme bundling system.
+
+## 🎨 ThemesBundler
 
 The main class for bundling multiple themes.
 
@@ -10,19 +14,69 @@ The main class for bundling multiple themes.
 new ThemesBundler(config)
 ```
 
-**Parameters:**
+#### Configuration Parameters
 
-- `config` (Object) - Configuration object with the following properties:
-  - `themes` (Array) - Array of theme configurations. See [Theme Configuration](#theme-configuration)
-  - `patterns` (Array) - Optional. Directory paths or glob patterns for finding external theme files
-  - `minify` (Boolean) - Optional. Whether to minify output. Default: `false`
-  - `commonThemePath` (String) - Optional. Path to common theme directory
-  - `watchPaths` (Array) - Optional. Paths to monitor for changes. Default: `[process.cwd()]`
-  - `exportPath` (String) - Optional. Custom export path for all themes
+<table class="api-table">
+<thead>
+<tr>
+<th align="left">Property</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>themes</code></td>
+<td><code>ThemeBundlerConfigType[]</code></td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td colspan="3">Array of theme configurations. See <a href="#theme-configuration">Theme Configuration</a></td>
+</tr>
+<tr>
+<td><code>patterns</code></td>
+<td><code>string[]</code></td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td colspan="3">Directory paths or glob patterns for finding external theme files</td>
+</tr>
+<tr>
+<td><code>minify</code></td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td colspan="3">Whether to minify output for production</td>
+</tr>
+<tr>
+<td><code>commonThemePath</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+</tr>
+<tr>
+<td colspan="3">Path to common theme directory</td>
+</tr>
+<tr>
+<td><code>watchPaths</code></td>
+<td><code>string[]</code></td>
+<td><code>[process.cwd()]</code></td>
+</tr>
+<tr>
+<td colspan="3">Paths to monitor for changes</td>
+</tr>
+<tr>
+<td><code>exportPath</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+</tr>
+<tr>
+<td colspan="3">Custom export path for all themes</td>
+</tr>
+</tbody>
+</table>
 
-**Returns:** ThemesBundler instance
-
-**Example:**
+#### Example
 
 ```javascript
 import { ThemesBundler } from '@arpadroid/style-bun';
@@ -93,27 +147,112 @@ bundler.watch();
 // Now watching for file changes...
 ```
 
----
-
-## Theme Configuration
+<a name="theme-configuration"></a>
+## ⚙️ Theme Configuration
 
 Individual theme configuration object or JSON file.
 
-### Properties
+### Configuration Options
 
-| Property          | Type                  | Default                               | Description                                                                                      |
-| ----------------- | --------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `path`            | `string`              | Required                              | Absolute path to theme directory                                                                 |
-| `includes`        | `string[]`            | `[]`                                  | Stylesheet paths to include, relative to theme directory without extensions                      |
-| `extension`       | `'css' \| 'scss'`     | `'css'`                               | File extension for theme stylesheets                                                             |
-| `baseTheme`       | `string`              | `undefined`                           | Name of base theme to inherit from                                                               |
-| `commonThemeFile` | `string`              | `undefined`                           | Path to common stylesheet (set internally)                                                       |
-| `configFile`      | `string`              | `[themePath]/[themeName].config.json` | Path to theme config file                                                                        |
-| `target`          | `string`              | `[themePath]/[themeName].bundled.css` | Output path for bundled CSS                                                                      |
-| `minifiedTarget`  | `string`              | `[themePath]/[themeName].min.css`     | Output path for minified CSS                                                                     |
-| `patterns`        | `string[]`            | `[]`                                  | Glob patterns for finding external theme files                                                   |
-| `verbose`         | `boolean`             | `false`                               | Enable detailed logging                                                                          |
-| `exportPath`      | `string`              | `undefined`                           | Custom export path for this theme                                                                |
+<table class="api-table">
+<thead>
+<tr>
+<th align="left">Property</th>
+<th align="left">Type</th>
+<th align="left">Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+</tr>
+<tr>
+<td colspan="3">Absolute path to theme directory. Required when defining themes in ThemesBundler array.</td>
+</tr>
+<tr>
+<td><code>includes</code></td>
+<td><code>string[]</code></td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td colspan="3">Stylesheet paths to include in compilation, relative to theme directory without file extensions.</td>
+</tr>
+<tr>
+<td><code>extension</code></td>
+<td><code>'css' | 'scss'</code></td>
+<td><code>'css'</code></td>
+</tr>
+<tr>
+<td colspan="3">File extension for theme stylesheets. SCSS requires <code>sass</code> package to be installed separately.</td>
+</tr>
+<tr>
+<td><code>baseTheme</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+</tr>
+<tr>
+<td colspan="3">Name of base theme to inherit from. Base theme contents are prepended to current theme output.</td>
+</tr>
+<tr>
+<td><code>commonThemeFile</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+</tr>
+<tr>
+<td colspan="3">Path to common stylesheet. Set internally by ThemesBundler when <code>commonThemePath</code> is specified.</td>
+</tr>
+<tr>
+<td><code>configFile</code></td>
+<td><code>string</code></td>
+<td><code>[themePath]/[themeName].config.json</code></td>
+</tr>
+<tr>
+<td colspan="3">Absolute path to theme config file. Auto-detected if not specified.</td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td><code>string</code></td>
+<td><code>[themePath]/[themeName].bundled.css</code></td>
+</tr>
+<tr>
+<td colspan="3">Output path for bundled CSS file (unminified, for development).</td>
+</tr>
+<tr>
+<td><code>minifiedTarget</code></td>
+<td><code>string</code></td>
+<td><code>[themePath]/[themeName].min.css</code></td>
+</tr>
+<tr>
+<td colspan="3">Output path for minified CSS file (for production).</td>
+</tr>
+<tr>
+<td><code>patterns</code></td>
+<td><code>string[]</code></td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td colspan="3">Glob patterns passed from ThemesBundler config for finding external theme files.</td>
+</tr>
+<tr>
+<td><code>verbose</code></td>
+<td><code>boolean</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td colspan="3">Enable detailed logging during compilation. Useful for debugging theme issues.</td>
+</tr>
+<tr>
+<td><code>exportPath</code></td>
+<td><code>string</code></td>
+<td><code>undefined</code></td>
+</tr>
+<tr>
+<td colspan="3">Custom export path for this theme's output files.</td>
+</tr>
+</tbody>
+</table>
 
 ### Example Configuration File
 
@@ -121,20 +260,18 @@ Individual theme configuration object or JSON file.
 
 ```json
 {
-  "includes": [
-    "vars/colors",
-    "vars/typography",
-    "components/buttons"
-  ],
-  "extension": "css",
-  "baseTheme": "default",
-  "verbose": false
+    "includes": [
+        "vars/colors",
+        "vars/typography",
+        "components/buttons"
+    ],
+    "extension": "css",
+    "baseTheme": "default",
+    "verbose": false
 }
 ```
 
----
-
-## Error Handling
+## 🔧 Error Handling
 
 ### Common Errors
 
@@ -171,11 +308,9 @@ Ensure pattern-matched files follow the naming convention:
 ❌ dark.button.css       # Wrong
 ```
 
-The sub-extension must match the theme name exactly.
+> **💡 Tip:** The sub-extension must match the theme name exactly.
 
----
-
-## Type Definitions
+## 📘 Type Definitions
 
 Full TypeScript definitions are included in the package at `src/types.d.ts`.
 
@@ -184,9 +319,7 @@ import { ThemesBundler } from '@arpadroid/style-bun';
 import type { ThemeBundlerConfigType } from '@arpadroid/style-bun';
 ```
 
----
-
-## Advanced Usage
+## 🚀 Advanced Usage
 
 ### Programmatic Theme Loading
 

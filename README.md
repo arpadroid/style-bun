@@ -1,14 +1,16 @@
-# @arpadroid/style-bun
+# README - **_`@arpadroid/style-bun`_**
 
 ![version](https://img.shields.io/badge/version-1.0.0-lightblue)
 ![node version](https://img.shields.io/badge/node-%3E%3D16.0.0-blue)
 ![npm version](https://img.shields.io/badge/npm-%3E%3D8.0.0-red)
 
-> Style Bun is a powerful and flexible stylesheet bundler, designed for scalability, maintainability and developer experience, it supports theme-based applications with automatic compilation, minification, and live reload.
+> `@arpadroid/style-bun` is a powerful and flexible CSS/SCSS stylesheet bundler, designed for scalability, maintainability and developer experience. <br/> It supports big and small applications with CSS compilation, minification, and live reload.
 
-**Quick Links:** [Changelog](CHANGELOG.md) | [API Reference](API.md) | [Contributing](#contributing)
+**_Resources:_** &nbsp; [📝 Changelog](docs/CHANGELOG.md) | [📖 API](docs/API.md) | [🤝 Contributing](#contributing)
 
-## ✨ Key Features
+**_Quick Links:_** &nbsp; [🚀 Quick Start](#quick-start) | [📐 How It Works](#how-it-works) | [🎨 Theme Toggling](#theme-toggling) | [�️ Development Setup](#development-setup)
+
+## ✨ Features
 
 - 🎨 **Multi-Theme Support** - Bundle multiple themes simultaneously (light/dark, mobile/desktop) with easy toggling for optimal performance.
 - 🔧 **Great DX** - Enhances developer experience, reduces cognitive load, improves maintainability and streamlines development,
@@ -18,20 +20,16 @@
 - 📦 **CSS & SCSS Support** - CSS works out-of-the-box. Optional SCSS support with automatic compilation and minification for production-ready outputs.
 - 🌍 **Framework Agnostic** - Works seamlessly with any web application without framework dependencies.
 
+<div id="quick-start"></div>
+
 ## 🚀 Quick Start
 
 ### Installation
 
 ```bash
-npm install @arpadroid/style-bun
-```
-
-#### Optional SCSS Support
-
-If you plan to use SCSS files, install the sass preprocessor:
-
-```bash
-npm install sass
+npm install @arpadroid/style-bun --save-dev
+# Optional for SCSS Support
+npm install sass --save-dev
 ```
 
 ### Basic Usage
@@ -54,18 +52,11 @@ const basePath = cwd + '/themes';
 // Instantiate bundler.
 const bundler = new ThemesBundler({
     themes: [
-        {
-            path: `${basePath}/default`
-            // You can also specify other configuration overrides here,
-            // as defined in the Individual Theme Configuration section below.
-        },
+        { path: `${basePath}/default` },
         { path: `${basePath}/mobile` },
         { path: `${basePath}/desktop` },
         { path: `${basePath}/dark` }
     ],
-    // Patterns are file patterns or directories to scan for theme stylesheets.
-    // These stylesheets must have a sub-extension matching the theme name.
-    // e.g. "button.dark.css"
     patterns: [cwd + '/components', cwd + '/pages'],
     minify: mode === 'production',
     commonThemePath: basePath + '/common'
@@ -74,7 +65,7 @@ const bundler = new ThemesBundler({
 // Wait until the bundler is ready.
 bundler.promise.then(async () => {
     // Clean-up the output directory before compiling.
-    bundler.cleanup();
+    await bundler.cleanup();
     // Bundle all themes.
     await bundler.bundle();
     // Watch all files for changes.
@@ -82,58 +73,63 @@ bundler.promise.then(async () => {
 });
 ```
 
-## 📐 How Theme Bundling Works
+### Configuration
 
-> **💡 Key Concept:** Each theme produces a **single optimized CSS file** by merging stylesheets from two sources.
+See the [API Reference](docs/API.md) for full details on configuration options available in `ThemesBundler` and individual theme configs.
+
+<div id="how-it-works"></div>
+
+## 📐 How it Works
+
+**💡 Key Concept:** Each theme produces a **single optimized CSS file** by merging stylesheets from two sources.
 
 ### 🎯 The Two-Source Approach
 
 Style Bun collects and merges stylesheets from two locations to create one unified CSS file per theme:
 
-#### 1️⃣ Theme Directory Files (via `includes` array)
+- **1. Theme Directory Files (via `includes` array)**
 
-Define explicit files in your theme's config to control **compilation order** and create the foundation:
+    Define explicit files in your theme's config to control **compilation order** and create the foundation:
 
-**Example: `themes/dark/dark.config.json`**
+    **Example: `themes/dark/dark.config.json`**
 
-```json
-{
-    "includes": [
-        "vars/colors", // ← Compiled FIRST
-        "vars/typography", // ← Then this
-        "components/buttons" // ← Then this
-    ]
-}
-```
+    ```json
+    {
+        "includes": [
+            "vars/colors", // ← Compiled FIRST
+            "vars/typography", // ← Then this
+            "components/buttons" // ← Then this
+        ]
+    }
+    ```
 
-**Result:** Variables load before components that use them. No CSS import HTTP requests! 🚀
+    **Result:** Variables load before components that use them. No CSS import HTTP requests! 🚀
 
-#### 2️⃣ Pattern-Matched Files (via `patterns` array)
+- **2. Pattern-Matched Files (via `patterns` array)**
+  Automatically discover component-specific theme files across your project:
 
-Automatically discover component-specific theme files across your project:
+    **File Structure:**
 
-**File Structure:**
+    ```
+    components/
+    ├── 🧩 button/
+    │   ├── button.js
+    │   ├── button.default.css  ← Found by pattern matching!
+    │   └── button.dark.css     ← Found by pattern matching!
+    └── 🧩 card/
+        ├── card.js
+        ├── card.default.css    ← Found by pattern matching!
+        └── card.dark.css       ← Found by pattern matching!
+    ```
 
-```
-components/
-  button/
-    button.js
-    button.default.css  ← Found by pattern matching!
-    button.dark.css     ← Found by pattern matching!
-  card/
-    card.js
-    card.default.css    ← Found by pattern matching!
-    card.dark.css       ← Found by pattern matching!
-```
+    **Bundler Config:**
 
-**Bundler Config:**
-
-```javascript
-const bundler = new ThemesBundler({
-    themes: [{ path: './themes/default' }, { path: './themes/dark' }],
-    patterns: ['./components'] // ← Scans for *.default.css and *.dark.css
-});
-```
+    ```javascript
+    const bundler = new ThemesBundler({
+        themes: [{ path: './themes/default' }, { path: './themes/dark' }],
+        patterns: ['./components'] // ← Scans for *.default.css and *.dark.css
+    });
+    ```
 
 ### 🔄 The Merge Process
 
@@ -168,58 +164,6 @@ const bundler = new ThemesBundler({
 - **🎯 Controlled Order** - Use `includes` to ensure variables/mixins load first
 - **🧩 Component Isolation** - Styles live next to components, not in theme folders
 - **📦 Single File Output** - Each theme = one CSS file = optimal performance
-
-### 🎨 Example: Building a Dark Theme
-
-**Project Structure:**
-
-```
-themes/
-  dark/
-    dark.config.json      ← Defines foundation files
-    vars/
-      colors.css          ← Dark theme colors
-      typography.css      ← Dark theme fonts
-components/
-  nav/
-    nav.js
-    nav.dark.css          ← Component-specific dark styles
-  hero/
-    hero.js
-    hero.dark.css         ← Component-specific dark styles
-```
-
-**themes/dark/dark.config.json:**
-
-```json
-{
-    "includes": [
-        "vars/colors", // Load colors first
-        "vars/typography" // Then typography
-    ]
-}
-```
-
-**build.js:**
-
-```javascript
-const bundler = new ThemesBundler({
-    themes: [{ path: './themes/dark' }],
-    patterns: ['./components'] // Auto-discover *.dark.css files
-});
-```
-
-**Output:**
-
-```
-✅ themes/dark/dark.bundled.css contains:
-   1. vars/colors.css           (from includes)
-   2. vars/typography.css       (from includes)
-   3. components/nav/nav.dark.css      (pattern-matched)
-   4. components/hero/hero.dark.css    (pattern-matched)
-```
-
-**Result:** One optimized file with perfect compilation order! 🎉
 
 ### 🏭 Production vs Development Output
 
@@ -268,39 +212,7 @@ const bundler = new ThemesBundler({
 <link rel="stylesheet" href="themes/dark/dark.min.css" />
 ```
 
-## Configuration Options
-
-### ThemesBundler Configuration
-
-Configuration options for the main `ThemesBundler` instance:
-
-| Property          | Type                       | Default           | Description                                                                                                                                      |
-| ----------------- | -------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `themes`          | `ThemeBundlerConfigType[]` | `[]`              | Array of theme configurations. Each theme only requires a `path` property pointing to the theme directory.                                       |
-| `patterns`        | `string[]`                 | `[]`              | Directory paths or glob patterns for finding theme files in external directories. Files must follow `[filename].[themeName].[extension]` naming. |
-| `minify`          | `boolean`                  | `false`           | Whether bundled themes should be minified. Set to `true` for production builds.                                                                  |
-| `commonThemePath` | `string`                   | `undefined`       | Path to a common theme used as base for all themes. Useful for SCSS mixins required during compilation.                                          |
-| `watchPaths`      | `string[]`                 | `[process.cwd()]` | Paths to monitor for changes in external theme files. Defaults to current working directory if not specified.                                    |
-| `exportPath`      | `string`                   | `undefined`       | Custom export path for bundled themes.                                                                                                           |
-
-### Individual Theme Configuration
-
-Configuration options for individual theme config files (e.g., `default.config.json`).
-These options can be overridden when defining themes in the `ThemesBundler` array.
-
-| Property          | Type              | Default                               | Description                                                                                      |
-| ----------------- | ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `path`            | `string`          | `undefined`                           | Absolute path to theme directory. Required when defining themes in ThemesBundler array.          |
-| `includes`        | `string[]`        | `[]`                                  | Stylesheet paths to include in compilation, relative to theme directory without file extensions. |
-| `extension`       | `'css' \| 'scss'` | `'css'`                               | File extension for theme stylesheets. SCSS requires `sass` package to be installed separately.   |
-| `baseTheme`       | `string`          | `undefined`                           | Name of base theme to inherit from. Base theme contents are prepended to current theme output.   |
-| `commonThemeFile` | `string`          | `undefined`                           | Path to common stylesheet. Set internally by ThemesBundler when `commonThemePath` is specified.  |
-| `configFile`      | `string`          | `[themePath]/[themeName].config.json` | Absolute path to theme config file. Auto-detected if not specified.                              |
-| `target`          | `string`          | `[themePath]/[themeName].bundled.css` | Output path for bundled CSS file (unminified, for development).                                  |
-| `minifiedTarget`  | `string`          | `[themePath]/[themeName].min.css`     | Output path for minified CSS file (for production).                                              |
-| `patterns`        | `string[]`        | `[]`                                  | Glob patterns passed from ThemesBundler config for finding external theme files.                 |
-| `verbose`         | `boolean`         | `false`                               | Enable detailed logging during compilation. Useful for debugging theme issues.                   |
-| `exportPath`      | `string`          | `undefined`                           | Custom export path for this theme's output files.                                                |
+<div id="theme-toggling"></div>
 
 ## 🎨 Theme Toggling
 
@@ -342,6 +254,7 @@ Use CSS media queries to automatically load different themes based on screen siz
 
 Resize your browser window to see the difference!
 
+<div id="development-setup"></div>
 ## �️ Development Setup
 
 If you've cloned this project from GitHub:

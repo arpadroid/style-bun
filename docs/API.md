@@ -1,29 +1,43 @@
 # 📚 API Reference - **_`@arpadroid/style-bun`_**
 
-Comprehensive API documentation for Style Bun's theme bundling system.
+> Comprehensive API documentation for Style Bun's theme bundling system.
 
-**_Links:_** [ThemesBundler Class](#themesbundler-class) | [ThemeBundler Class](#theme-bundler-class) | [Error Handling](#error-handling) | [Advanced Usage](#advanced-usage)
+**_Links:_** [🗜️ ThemesBundler Class](#themesbundler-class) | [🎨 ThemeBundler Class](#theme-bundler-class) 
 
 <div id="themesbundler-class"></div>
 
-## 🎨 ThemesBundler Class
+## 🗜️ ThemesBundler Class
 
-> The `ThemesBundler` class is in charge of orchestrating the bundling of multiple themes.
+The `ThemesBundler` class is in charge of orchestrating the bundling of multiple themes.
 
 ```typescript
 import { ThemesBundler, ThemesBundlerConfigType } from '@arpadroid/style-bun';
-const config: ThemesBundlerConfigType = {
-    themes: [{ path: './themes/default' }, { path: './themes/dark' }],
-    patterns: ['{cwd}/components', '{cwd}/pages'],
-    minify: process.env.NODE_ENV === 'production'
-};
 
-const bundler = new ThemesBundler(config);
-bundler.bundle().then(async response => {
-    console.log('All themes bundled successfully!', response);
+const MODE = process.env.NODE_ENV || 'development';
+
+/**
+ * You can integrate a similar script into your build process.
+ */
+export function bundleThemes() {
+    // Define bundler configuration
+    const config: ThemesBundlerConfigType = {
+        themes: [{ path: './themes/default' }, { path: './themes/dark' }],
+        patterns: ['{cwd}/components', '{cwd}/pages'],
+        minify: process.env.NODE_ENV === 'production'
+    };
+
+    const bundler = new ThemesBundler(config);
+    // wait for initialization
+    await bundler.promise;
+    // clean previous builds
     await bundler.cleanup();
-    bundler.watch();
-});
+    // bundle themes
+    await bundler.bundle();
+    // optionally watch for changes
+    if (MODE === 'development') {
+        bundler.watch();
+    }
+}
 ```
 
 ### ⚙️ Configuration
@@ -86,9 +100,11 @@ bundler.bundle().then(async response => {
     // Now watching for file changes...
     ```
 
+<br/>
+
 <div id="theme-bundler-class"></div>
 
-## Theme Bundler Class
+## 🎨 Theme Bundler Class
 
 > The `ThemeBundler` class handles the bundling of a single theme.
 
@@ -107,6 +123,8 @@ themeBundler.bundle().then(() => {
     console.log('Theme bundled successfully!');
 });
 ```
+
+<div id="theme-configuration"></div>
 
 ### ⚙️ Configuration
 
@@ -196,108 +214,4 @@ themeBundler.bundle().then(() => {
     "baseTheme": "default",
     "verbose": false
 }
-```
-
-<br/>
-<div id="error-handling"></div>
-
-## 🔧 Error Handling
-
-### Common Errors
-
-#### SCSS Compilation Errors
-
-If you encounter SCSS compilation errors, ensure the `sass` package is installed:
-
-```bash
-npm install sass
-```
-
-#### File Not Found
-
-If theme files are not found, enable verbose logging:
-
-```javascript
-const bundler = new ThemesBundler({
-    themes: [
-        {
-            path: './themes/dark',
-            verbose: true // Enable detailed logging
-        }
-    ]
-});
-```
-
-#### Pattern Matching Issues
-
-Ensure pattern-matched files follow the naming convention:
-
-```
-✅ button.dark.css       # Correct
-❌ button-dark.css       # Wrong
-❌ dark.button.css       # Wrong
-```
-
-> **💡 Tip:** The sub-extension must match the theme name exactly.
-
-## 🚀 Advanced Usage
-
-### Programmatic Theme Loading
-
-```javascript
-// Load theme based on user preference
-const theme = localStorage.getItem('theme') || 'default';
-const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href = `/themes/${theme}/${theme}.min.css`;
-document.head.appendChild(link);
-```
-
-### Dynamic Theme Switching
-
-```javascript
-function switchTheme(themeName) {
-    const links = document.querySelectorAll('link[data-theme]');
-    links.forEach(link => {
-        link.disabled = link.dataset.theme !== themeName;
-    });
-}
-```
-
-### Conditional Build
-
-```javascript
-const bundler = new ThemesBundler({
-    themes: process.env.THEMES
-        ? process.env.THEMES.split(',').map(name => ({ path: `./themes/${name}` }))
-        : [{ path: './themes/default' }],
-    minify: process.env.NODE_ENV === 'production'
-});
-```
-
-### Build Script Integration
-
-```javascript
-// build.js
-import { ThemesBundler } from '@arpadroid/style-bun';
-
-async function build() {
-    const bundler = new ThemesBundler({
-        themes: [{ path: './themes/default' }, { path: './themes/dark' }],
-        patterns: ['./src/components'],
-        minify: true
-    });
-
-    await bundler.promise;
-
-    console.log('Cleaning old builds...');
-    bundler.cleanup();
-
-    console.log('Building themes...');
-    await bundler.bundle();
-
-    console.log('Build complete!');
-}
-
-build().catch(console.error);
 ```

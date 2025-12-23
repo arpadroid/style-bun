@@ -1,14 +1,14 @@
 # README - **_`@arpadroid/style-bun`_**
 
 ![version](https://img.shields.io/badge/version-1.0.0-lightblue)
-![node version](https://img.shields.io/badge/node-%3E%3D16.0.0-blue)
-![npm version](https://img.shields.io/badge/npm-%3E%3D8.0.0-red)
+![node version](https://img.shields.io/badge/node-%3E%3D16.0.0-lightyellow)
+![npm version](https://img.shields.io/badge/npm-%3E%3D8.0.0-pink)
+
+> **_Links:_** &nbsp; [🚀 Quick Start](#quick-start) | [📐 How It Works](#how-it-works) | [🎨 Theme Toggling](#theme-toggling) | [�️ Development Setup](#development-setup) | [🚫 Error Handling](#error-handling) | [📖 API](docs/API.md) | [🤝 Contributing](#contributing) | [📝 Changelog](docs/CHANGELOG.md)
 
 > `@arpadroid/style-bun` is a powerful and flexible CSS/SCSS stylesheet bundler, designed for scalability, maintainability and developer experience. <br/> It supports big and small applications with CSS compilation, minification, and live reload.
 
-**_Resources:_** &nbsp; [📝 Changelog](docs/CHANGELOG.md) | [📖 API](docs/API.md) | [🤝 Contributing](#contributing)
-
-**_Quick Links:_** &nbsp; [🚀 Quick Start](#quick-start) | [📐 How It Works](#how-it-works) | [🎨 Theme Toggling](#theme-toggling) | [�️ Development Setup](#development-setup)
+<br/>
 
 ## ✨ Features
 
@@ -19,6 +19,8 @@
 - 🪶 **Ultra-Lightweight & Zero Config** - Minimal dependencies and works out-of-the-box with sensible defaults.
 - 📦 **CSS & SCSS Support** - CSS works out-of-the-box. Optional SCSS support with automatic compilation and minification for production-ready outputs.
 - 🌍 **Framework Agnostic** - Works seamlessly with any web application without framework dependencies.
+
+<br/>
 
 <div id="quick-start"></div>
 
@@ -51,13 +53,8 @@ const basePath = cwd + '/themes';
 
 // Instantiate bundler.
 const bundler = new ThemesBundler({
-    themes: [
-        { path: `${basePath}/default` },
-        { path: `${basePath}/mobile` },
-        { path: `${basePath}/desktop` },
-        { path: `${basePath}/dark` }
-    ],
-    patterns: [cwd + '/components', cwd + '/pages'],
+    themes: [{ path: `${basePath}/default` }, { path: `${basePath}/mobile` }],
+    patterns: ['{cwd}/components', '{cwd}/pages'],
     minify: mode === 'production',
     commonThemePath: basePath + '/common'
 });
@@ -77,11 +74,13 @@ bundler.promise.then(async () => {
 
 See the [API Reference](docs/API.md) for full details on configuration options available in `ThemesBundler` and individual theme configs.
 
+<br/>
+
 <div id="how-it-works"></div>
 
 ## 📐 How it Works
 
-**💡 Key Concept:** Each theme produces a **single optimized CSS file** by merging stylesheets from two sources.
+> **💡** Each theme produces a **single optimized CSS file** by merging stylesheets from two sources.
 
 ### 🎯 The Two-Source Approach
 
@@ -163,44 +162,47 @@ Style Bun collects and merges stylesheets from two locations to create one unifi
 - **⚡ Zero HTTP Requests** - No `@import` statements means faster page loads
 - **🎯 Controlled Order** - Use `includes` to ensure variables/mixins load first
 - **🧩 Component Isolation** - Styles live next to components, not in theme folders
+- **🔗 Loose Coupling** - Themes unaware of project structure, patterns handle discovery
 - **📦 Single File Output** - Each theme = one CSS file = optimal performance
 
 ### 🏭 Production vs Development Output
 
 Style Bun creates different output files depending on your build mode:
 
-#### Development Mode (`minify: false`)
+- #### **Development Mode** (`minify: false`)
 
-```javascript
-const bundler = new ThemesBundler({
-    themes: [{ path: './themes/dark' }],
-    minify: false // or omit (defaults to false)
-});
-```
+    ```javascript
+    const bundler = new ThemesBundler({
+        themes: [{ path: './themes/dark' }],
+        minify: false // or omit (defaults to false)
+    });
+    ```
 
-**Output:**
+    **Output:**
 
-```
-✅ themes/dark/dark.bundled.css  ← Unminified, readable, with source formatting
-```
+    ```
+    ✅ themes/dark/dark.bundled.css  ← Unminified, readable, with source formatting
+    ```
 
-#### Production Mode (`minify: true`)
+- #### **Production Mode** (`minify: true`)
 
-```javascript
-const bundler = new ThemesBundler({
-    themes: [{ path: './themes/dark' }],
-    minify: true // Enable minification
-});
-```
+    ```javascript
+    const bundler = new ThemesBundler({
+        themes: [{ path: './themes/dark' }],
+        minify: true // Enable minification
+    });
+    ```
 
-**Output:**
+    **Output:**
 
-```
-✅ themes/dark/dark.bundled.css  ← Unminified (for debugging)
-✅ themes/dark/dark.min.css      ← Minified (use this in production!)
-```
+    ```
+    ✅ themes/dark/dark.bundled.css  ← Unminified (for debugging)
+    ✅ themes/dark/dark.min.css      ← Minified (use this in production!)
+    ```
 
-> **📦 Production Tip:** Always use the `.min.css` file in production for optimal performance and smaller bundle sizes.
+    > **📦 Production Tip:** Always use the `.min.css` file in production for optimal performance and smaller bundle sizes.
+
+<br/>
 
 **HTML Example:**
 
@@ -211,50 +213,80 @@ const bundler = new ThemesBundler({
 <!-- Production -->
 <link rel="stylesheet" href="themes/dark/dark.min.css" />
 ```
+<br/>
 
 <div id="theme-toggling"></div>
 
 ## 🎨 Theme Toggling
 
-### 🔘 Interactive Theme Switching
+- ### 🔘 Interactive Theme Switching
 
-Toggle between light and dark themes by enabling/disabling stylesheets with JavaScript:
+    Toggle between light and dark themes by enabling/disabling stylesheets with JavaScript:
 
-```html
-<link id="dark-theme" disabled rel="stylesheet" href="themes/dark/dark.bundled.css" />
-```
+    ```html
+    <link id="dark-theme" disabled rel="stylesheet" href="themes/dark/dark.bundled.css" />
+    ```
 
-Simply toggle the `disabled` attribute to switch themes:
+    Simply toggle the `disabled` attribute to switch themes on and off:
 
-```javascript
-// Toggle dark theme
-const darkTheme = document.getElementById('dark-theme');
-darkTheme.disabled = !darkTheme.disabled;
-```
+    ```javascript
+    // Toggle dark theme
+    const darkTheme = document.getElementById('dark-theme');
+    darkTheme.disabled = !darkTheme.disabled;
+    ```
 
-### 📱 Responsive Theme Loading
+    Or use a function to switch themes dynamically:
 
-Use CSS media queries to automatically load different themes based on screen size:
+    ```javascript
+    function switchTheme(themeName) {
+        const links = document.querySelectorAll('link[data-theme]');
+        links.forEach(link => {
+            link.disabled = link.dataset.theme !== themeName;
+        });
+    }
+    ```
 
-```html
-<link
-    id="mobile-theme"
-    rel="stylesheet"
-    media="screen and (max-width: 700px)"
-    href="themes/mobile/mobile.bundled.css"
-/>
+<br/>
 
-<link
-    id="desktop-theme"
-    rel="stylesheet"
-    media="screen and (min-width: 701px)"
-    href="themes/desktop/desktop.bundled.css"
-/>
-```
+- ### 🧑‍💻 Programmatic Theme Loading
 
-Resize your browser window to see the difference!
+    ```javascript
+    // Load theme based on user preference
+    const theme = localStorage.getItem('theme') || 'default';
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `/themes/${theme}/${theme}.min.css`;
+    document.head.appendChild(link);
+    ```
+
+<br/>
+
+- ### 📱 Responsive Theme Loading
+
+    Use CSS media queries to automatically load different themes based on screen size:
+
+    ```html
+    <link
+        id="mobile-theme"
+        rel="stylesheet"
+        media="screen and (max-width: 700px)"
+        href="themes/mobile/mobile.bundled.css"
+    />
+
+    <link
+        id="desktop-theme"
+        rel="stylesheet"
+        media="screen and (min-width: 701px)"
+        href="themes/desktop/desktop.bundled.css"
+    />
+    ```
+
+    Resize your browser window to see the difference!
+
+<br/>
 
 <div id="development-setup"></div>
+
 ## �️ Development Setup
 
 If you've cloned this project from GitHub:
@@ -271,6 +303,53 @@ npm run demo
 npm run bundle:dev  # Bundle CSS in development mode
 npm start           # Start the demo server
 ```
+
+<br/>
+
+<div id="error-handling"></div>
+
+## 🚫 Error Handling
+
+### Common Errors
+
+#### SCSS Compilation Errors
+
+If you encounter SCSS compilation errors, ensure the `sass` package is installed:
+
+```bash
+npm install sass
+```
+
+#### File Not Found
+
+If theme files are not found, enable verbose logging:
+
+```javascript
+const bundler = new ThemesBundler({
+    themes: [
+        {
+            path: './themes/dark',
+            verbose: true // Enable detailed logging
+        }
+    ]
+});
+```
+
+#### Pattern Matching Issues
+
+Ensure pattern-matched files follow the naming convention:
+
+```
+✅ button.dark.css       # Correct
+❌ button-dark.css       # Wrong
+❌ dark.button.css       # Wrong
+```
+
+> **💡 Tip:** The sub-extension must match the theme name exactly.
+
+<br/>
+
+<div id="dependencies"></div>
 
 ## 📦 Dependencies
 
@@ -292,16 +371,22 @@ npm start           # Start the demo server
 - **[Babel Jest](https://babeljs.io/docs/babel-jest)** - ES6+ transpilation for tests
 - **[ESLint](https://eslint.org/)** - Code linting and formatting
 
-## Contributing
+<br/>
+
+<div id="contributing"></div>
+
+## 🤝 Contributing
 
 This project has specific architectural goals. If you'd like to contribute:
 
-1. **[Open an issue](https://github.com/arpadroid/style-bun/issues/new)** describing your proposal
+1. **[Open an issue](https://github.com/arpadroid/module/issues/new)** describing your proposal
 2. Wait for maintainer feedback before coding
 3. PRs without prior discussion may be closed
 
-**[Bug reports](https://github.com/arpadroid/style-bun/issues/new)** are always welcome!
+**[Bug reports](https://github.com/arpadroid/module/issues/new)** are always welcome!
 
-## License
+<br/>
+
+## 📄 License
 
 MIT License - see LICENSE file for details.

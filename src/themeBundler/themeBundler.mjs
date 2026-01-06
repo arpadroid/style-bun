@@ -1,5 +1,5 @@
 /**
- * @typedef {import('../common.types.js').BundlerCommandArgsType} BundlerCommandArgsType
+ * @typedef {import('../common.types.js').BundleThemeArgsType} BundleThemeArgsType
  * @typedef {import('./themeBundler.types.js').ThemeBundlerConfigType} ThemeBundlerConfigType
  * @typedef {import('../themesBundler/themesBundler.types.js').WriteStylesReturnType} WriteStylesReturnType
  * @typedef {import('../themesBundler/themesBundler.types.js').StyleUpdateCallbackType} StyleUpdateCallbackType
@@ -13,7 +13,7 @@ import { hideBin } from 'yargs/helpers';
 import { transform } from 'lightningcss';
 import chokidar from 'chokidar';
 
-/** @type {BundlerCommandArgsType} */
+/** @type {BundleThemeArgsType} */
 const argv = yargs(hideBin(process.argv)).argv;
 const cwd = process.cwd();
 const MODE = argv.mode === 'production' ? 'production' : 'development';
@@ -205,7 +205,8 @@ class ThemeBundler {
      * @returns {string}
      */
     getMinifiedTargetFile() {
-        return this._config?.minifiedTarget ?? PATH.normalize(`${this.path}/${this.themeName}.min.css`);
+        const path = PATH.join(this.path || '', `${this.themeName}.min.css`);
+        return this._config?.minifiedTarget ?? PATH.normalize(path);
     }
 
     /**

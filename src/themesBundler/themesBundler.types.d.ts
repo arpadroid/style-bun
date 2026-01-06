@@ -5,9 +5,15 @@ import { ThemeBundlerConfigType } from '../themeBundler/themeBundler.types.js';
  */
 export interface ThemesBundlerConfigType {
     /**
+     * An optional path to the directory where the theme files are located.
+     * If not specified, the script will use the working directory by default or the path defined in each theme config in the themes array.
+     */
+    themesPath?: string;
+
+    /**
      * @property {ThemeBundlerConfigType[]} themes - An array of ThemeBundlerConfigType configurations to define your themes.
      * Check the implementation in demo/bundle.js.
-     * It is only required to define a path property for each of them.
+     * It is only required to define a path property for each of them, the rest of the properties are optional or can be defined in a theme config file in each theme directory.
      * E.g. themes: [{ path: '/../src/themes/default' }, { path: '/../src/themes/dark' }]
      */
     themes?: ThemeBundlerConfigType[];

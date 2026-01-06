@@ -8,8 +8,6 @@ module.exports = {
     transform: {
         '^.+\\.m?js$': ['babel-jest', { presets: [['@babel/preset-env', { targets: { node: 'current' } }]] }]
     },
-    transformIgnorePatterns: [
-        'node_modules/(?!(chokidar|readdirp|glob|lightningcss|yargs)/)'
-    ],
-    fakeTimers: { enableGlobally: false },
+    transformIgnorePatterns: ['node_modules/(?!(chokidar|readdirp|glob|lightningcss|yargs)/)'],
+    fakeTimers: { enableGlobally: false }
 };

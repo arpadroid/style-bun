@@ -1,7 +1,7 @@
 /**
  * @typedef {import('./themesBundler.types.js').ThemesBundlerConfigType} ThemesBundlerConfigType
  * @typedef {import('../themeBundler/themeBundler.types.js').ThemeBundlerConfigType} ThemeBundlerConfigType
- * @typedef {import('../common.types.js').BundlerCommandArgsType} BundlerCommandArgsType
+ * @typedef {import('../common.types.js').BundleThemeArgsType} BundleThemeArgsType
  */
 
 import PATH from 'path';
@@ -10,7 +10,7 @@ import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs';
 import ThemeBundler from '../themeBundler/themeBundler.mjs';
 
-/** @type {BundlerCommandArgsType} */
+/** @type {BundleThemeArgsType} */
 const argv = yargs(hideBin(process.argv)).argv;
 const WATCH = argv?.watch;
 class ThemesBundler {
@@ -36,10 +36,14 @@ class ThemesBundler {
      * Instantiates ThemeBundler for each theme defined in the config.
      */
     _initializeThemes() {
+        const { themes = [] } = this._config || {};
+
         /** @type {Promise<boolean>[]} */
         this.promises = [];
         this._initializeCommonTheme();
-        const themes = this._config?.themes;
+        const themesFromPath = this.getThemesFromThemePath();
+        themesFromPath.forEach(themePath => themes.push({ path: themePath }));
+
         if (Array.isArray(themes)) {
             themes.forEach(themeConfig => this._initializeTheme(themeConfig));
         }
@@ -118,6 +122,18 @@ class ThemesBundler {
      */
     getTheme(name) {
         return this.themesByName[name];
+    }
+
+    getThemesFromThemePath() {
+        const themesPath = this._config?.themesPath;
+        if (typeof themesPath === 'string' && fs.existsSync(themesPath)) {
+            const themeDirs = fs.readdirSync(themesPath, { withFileTypes: true }).filter(dir => {
+                const path = PATH.join(themesPath, dir.name, `${dir.name}.config.json`);
+                return dir.isDirectory() && fs.existsSync(path);
+            });
+            return themeDirs.map(dir => PATH.join(themesPath, dir.name));
+        }
+        return [];
     }
 
     /**

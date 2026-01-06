@@ -14,20 +14,23 @@ describe('ThemesBundler', () => {
     /** @type {ThemesBundler} */
     let bundler;
     const cwd = process.cwd();
-    const basePath = cwd + '/demo/themes';
+    const basePath = path.join(cwd, 'demo', 'themes');
     beforeAll(() => {
         /** @type {ThemesBundler} */
         bundler = new ThemesBundler({
-            exportPath: cwd + '/demo/css/test-output',
+            exportPath: path.join(cwd, 'demo', 'css', 'test-output'),
             themes: [
-                { path: basePath + '/default' },
-                { path: basePath + '/mobile' },
-                { path: basePath + '/desktop' },
-                { path: basePath + '/dark' }
+                { path: path.join(basePath, 'default') },
+                { path: path.join(basePath, 'mobile') },
+                { path: path.join(basePath, 'desktop') },
+                { path: path.join(basePath, 'dark') }
             ],
-            patterns: [cwd + '/demo/css/components/**/*', cwd + '/demo/css/pages/**/*'],
+            patterns: [
+                path.join(cwd, 'demo', 'css', 'components', '**', '*'),
+                path.join(cwd, 'demo', 'css', 'pages', '**', '*')
+            ],
             minify: false,
-            commonThemePath: basePath + '/common'
+            commonThemePath: path.join(basePath, 'common')
         });
     });
 
@@ -58,6 +61,21 @@ describe('ThemesBundler', () => {
         for (const theme of bundler.themes) {
             expect(existsSync(theme.getTargetFile())).toBe(true);
         }
+    });
+
+    it('uses themePath to load themes', async () => {
+        const bundler = new ThemesBundler({
+            themesPath: basePath,
+            patterns: [cwd + '/demo/css/components/**/*'],
+            exportPath: path.join(outputDir, 'test-themepath')
+        });
+        await bundler.promise;
+        expect(bundler.themes.length).toBe(8);
+        expect(bundler.themes.find(t => t.getName() === 'default')).toBeDefined();
+        expect(bundler.themes.find(t => t.getName() === 'dark')).toBeDefined();
+        const mobileConfig = bundler.themes.find(t => t.getName() === 'mobile')?.fileConfig;
+        expect(mobileConfig).toBeDefined();
+        expect(mobileConfig.extension).toBe('css');
     });
 
     describe('Minification', () => {

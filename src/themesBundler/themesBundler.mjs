@@ -128,7 +128,7 @@ class ThemesBundler {
         const themesPath = this._config?.themesPath;
         if (typeof themesPath === 'string' && fs.existsSync(themesPath)) {
             const themeDirs = fs.readdirSync(themesPath, { withFileTypes: true }).filter(dir => {
-                const path = PATH.join(themesPath, dir.name, `${dir.name}.config.json`);
+                const path = PATH.join(themesPath, dir.name, `${dir.name}.config.js`);
                 return dir.isDirectory() && fs.existsSync(path);
             });
             return themeDirs.map(dir => PATH.join(themesPath, dir.name));

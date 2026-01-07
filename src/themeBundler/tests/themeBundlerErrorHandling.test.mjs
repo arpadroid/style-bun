@@ -35,7 +35,7 @@ describe('Error handling', () => {
 
         await theme.promise;
         expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining('Failed to parse config file for theme'),
+            expect.stringContaining('Failed to load config file for theme'),
             expect.anything()
         );
         consoleSpy.mockRestore();

@@ -47,7 +47,7 @@ describe('ThemeBundler', () => {
         it('Checks for valid properties', async () => {
             expect(theme.getName()).toBe('default');
             expect(theme.getPath()).toBe(defaultThemeDir);
-            expect(theme.getConfigFile()).toBe(path.join(defaultThemeDir, 'default.config.json'));
+            expect(theme.getConfigFile()).toBe(path.join(defaultThemeDir, 'default.config.js'));
         });
 
         it('Function normalizePattern returns expected results', async () => {
@@ -63,10 +63,10 @@ describe('ThemeBundler', () => {
 
         test('exportDir works as expected', async () => {
             theme.exportDir(path.join(themesDir, 'empty'), path.join(testDir, 'export-output'));
-            expect(existsSync(path.join(testDir, 'export-output', 'empty.config.json'))).toBe(true);
+            expect(existsSync(path.join(testDir, 'export-output', 'empty.config.js'))).toBe(true);
 
             theme.exportDir(path.join(themesDir, 'empty'), path.join(testDir, 'some', 'place'));
-            expect(existsSync(path.join(testDir, 'some', 'place', 'empty.config.json'))).toBe(true);
+            expect(existsSync(path.join(testDir, 'some', 'place', 'empty.config.js'))).toBe(true);
         });
 
         it('Verifies theme files include components, pages, and common theme files.', async () => {

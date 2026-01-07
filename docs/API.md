@@ -205,13 +205,13 @@ themeBundler.bundle().then(() => {
 
 ### Example Configuration File
 
-**themes/dark/dark.config.json:**
+**themes/dark/dark.config.js:**
 
-```json
-{
-    "includes": ["vars/colors", "vars/typography", "components/buttons"],
-    "extension": "css",
-    "baseTheme": "default",
-    "verbose": false
-}
+```javascript
+export default {
+    includes: ['vars/colors', 'vars/typography', 'components/buttons'],
+    extension: 'css',
+    baseTheme: 'default',
+    verbose: false
+};
 ```

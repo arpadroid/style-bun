@@ -92,26 +92,26 @@ await bundler.bundle();</code></pre>
                     <pre><code>src/
 └── themes/
     ├── default/
-    │   ├── default.config.json
+    │   ├── default.config.js
     │   ├── vars/
     │   │   ├── colors.css
     │   │   └── typography.css
     │   └── components/
     │       └── buttons.css
     └── dark/
-        ├── dark.config.json
+        ├── dark.config.js
         └── vars/
             └── colors.css</code></pre>
 
                     <p>Configure each theme with a config file:</p>
-                    <pre><code>// default.config.json
-{
-  "includes": [
-    "vars/colors",
-    "vars/typography", 
-    "components/buttons"
+                    <pre><code>// default.config.js
+export default {
+  includes: [
+    'vars/colors',
+    'vars/typography', 
+    'components/buttons'
   ]
-}</code></pre>
+};</code></pre>
                 </details>
 
                 <details open>

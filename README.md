@@ -74,6 +74,22 @@ bundler.promise.then(async () => {
 
 See the [API Reference](docs/API.md) for full details on configuration options available in `ThemesBundler` and individual theme configs.
 
+### 🗂️ Using `themesPath` ✅
+
+You can optionally provide a `themesPath` to point the bundler at a directory containing multiple theme folders. The bundler will scan the directory and load any subdirectories that contain a `[themeName].config.js` file (e.g. `src/themes/default/default.config.js`). This is useful when you keep all themes in a single directory and want them discovered automatically.
+
+Example:
+
+```javascript
+import path from 'path';
+const cwd = process.cwd();
+const bundler = new ThemesBundler({
+    themesPath: path.join(cwd, 'themes'),
+    patterns: [path.join(cwd, 'components', '**', '*')],
+    exportPath: path.join(cwd, 'dist', 'themes')
+});
+```
+
 <br/>
 
 <div id="how-it-works"></div>
@@ -90,16 +106,16 @@ Style Bun collects and merges stylesheets from two locations to create one unifi
 
     Define explicit files in your theme's config to control **compilation order** and create the foundation:
 
-    **Example: `themes/dark/dark.config.json`**
+    **Example: `themes/dark/dark.config.js`**
 
-    ```json
-    {
-        "includes": [
-            "vars/colors", // ← Compiled FIRST
-            "vars/typography", // ← Then this
-            "components/buttons" // ← Then this
+    ```javascript
+    export default {
+        includes: [
+            'vars/colors', // ← Compiled FIRST
+            'vars/typography', // ← Then this
+            'components/buttons' // ← Then this
         ]
-    }
+    };
     ```
 
     **Result:** Variables load before components that use them. No CSS import HTTP requests! 🚀

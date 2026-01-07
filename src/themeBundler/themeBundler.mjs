@@ -66,11 +66,11 @@ class ThemeBundler {
             return Promise.resolve({});
         }
         try {
-            const payload = (await fs.readFileSync(configFile)).toString();
-            return Promise.resolve(JSON.parse(payload));
+            const configModule = await import(configFile);
+            return Promise.resolve(configModule.default || {});
         } catch (error) {
             console.error(
-                `🚫 Failed to parse config file for theme '${this.themeName}': ${configFile}`,
+                `🚫 Failed to load config file for theme '${this.themeName}': ${configFile}`,
                 error
             );
             return Promise.resolve({});
@@ -105,7 +105,7 @@ class ThemeBundler {
      * @returns {string}
      */
     getConfigFile() {
-        return PATH.normalize(`${this.path}/${this.themeName}.config.json`);
+        return PATH.normalize(`${this.path}/${this.themeName}.config.js`);
     }
 
     /**

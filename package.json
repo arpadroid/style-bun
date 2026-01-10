@@ -1,43 +1,94 @@
 {
     "author": "Andres Vaquero (@arpadroid) <web.andresvaquero@gmail.com> ",
-    "name": "@arpadroid/stylesheet-bundler",
+    "name": "@arpadroid/style-bun",
     "type": "module",
-    "version": "1.1.1",
+    "version": "1.0.0",
     "exports": "./src/index.mjs",
-    "types": "dist/@types/types.compiled.d.ts",
-    "description": "Aiming to deliver CSS scalability, maintainability and performance, and ultimately striving to boost CSS development experience, productivity and efficiency, Arpadroid Stylesheet Bundler package helps bundling stylesheets across your application into different stylesheets or themes.",
+    "main": "./src/index.mjs",
+    "types": "./src/types.d.ts",
+    "files": [
+        "src/",
+        "README.md",
+        "LICENSE"
+    ],
+    "description": "A stylesheet bundler for multi-theme applications focusing on scalability and DX. Bundle modular stylesheets into themes with automatic compilation, minification, and live reload support.",
     "keywords": [
-        "Style sheet bundler",
-        "LESS bundler",
-        "SCSS bundler",
-        "LiveReload",
-        "CSS productivity",
-        "CSS themes"
+        "css",
+        "scss",
+        "sass",
+        "stylesheet",
+        "bundler",
+        "theme",
+        "themes",
+        "css-bundler",
+        "scss-bundler",
+        "theme-bundler",
+        "multi-theme",
+        "dark-mode",
+        "lightningcss",
+        "css-compiler",
+        "css-build",
+        "live-reload",
+        "hot-reload",
+        "minify",
+        "watch",
+        "responsive",
+        "mobile-first"
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/arpadroid/stylesheet-bundler.git"
+        "url": "git+https://github.com/arpadroid/style-bun.git"
     },
-    "homepage": "https://github.com/arpadroid/stylesheet-bundler#readme",
+    "homepage": "https://github.com/arpadroid/style-bun#readme",
+    "bugs": {
+        "url": "https://github.com/arpadroid/style-bun/issues"
+    },
     "scripts": {
-        "bundle:css:dev": "node ./demo/css/bundle.js",
-        "bundle:css:prod": "node ./demo/css/bundle.js --mode=production",
-        "build": "node ./node_modules/@arpadroid/module/scripts/build-project.mjs --project=stylesheet-bundler --minify",
-        "test": "node ./node_modules/@arpadroid/module/scripts/test-project.mjs --project=stylesheet-bundler --storybook --jest --port=6025"
+        "build:dev": "node ./demo/bundle.js",
+        "build": "node ./demo/bundle.js --mode=production --verbose=true",
+        "clean:install": "npm run clean && npm install",
+        "clean": "rm -rf ./dist ./node_modules package-lock.json",
+        "demo": "npm run build:dev & npm run start:demo",
+        "dev": "npm run demo",
+        "lint": "eslint src/**/*.{js,mjs}",
+        "prepublishOnly": "npm run test && npm run lint && npm run build",
+        "start:demo": "browser-sync start --server demo --files 'demo/**/*' --port 8080 --startPath /demo.html --no-notify",
+        "start": "npm run demo",
+        "test:coverage": "jest --coverage",
+        "test:watch": "jest --watch",
+        "test": "jest"
     },
     "license": "MIT",
+    "engines": {
+        "node": ">=16.0.0",
+        "npm": ">=8.0.0"
+    },
     "devDependencies": {
-        "@arpadroid/module": "file:../module",
-        "@babel/plugin-syntax-import-assertions": "^7.23.3",
         "@babel/preset-env": "^7.23.9",
-        "@types/node": "^22.13.5",
-        "@types/yargs": "^17.0.33"
+        "@eslint/js": "^9.39.1",
+        "@jest/globals": "^30.2.0",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^25.0.1",
+        "babel-jest": "^30.2.0",
+        "browser-sync": "^3.0.4",
+        "eslint": "^9.39.1",
+        "globals": "^16.5.0",
+        "jest": "^30.2.0",
+        "prettier": "^3.7.4",
+        "sass": "^1.97.1"
     },
     "dependencies": {
+        "chokidar": "^5.0.0",
         "glob": "^11.0.0",
-        "less": "^4.2.0",
         "lightningcss": "^1.24.0",
-        "sass": "^1.71.1",
         "yargs": "^17.7.2"
+    },
+    "peerDependencies": {
+        "sass": "^1.77.0"
+    },
+    "peerDependenciesMeta": {
+        "sass": {
+            "optional": true
+        }
     }
 }

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>@arpadroid/style-bun</title>
+        <link rel="stylesheet" href="themes/default/default.bundled.css" />
+        <link id="dark-theme" disabled rel="stylesheet" href="themes/dark/dark.bundled.css" />
+        <link
+            id="mobile-theme"
+            rel="stylesheet"
+            media="screen and (max-width: 700px)"
+            href="themes/mobile/mobile.bundled.css"
+        />
+        <link
+            id="desktop-theme"
+            rel="stylesheet"
+            media="screen and (min-width: 701px)"
+            href="themes/desktop/desktop.bundled.css"
+        />
+
+        <script type="module" src="components/button/button.js"></script>
+        <script type="module" src="components/darkThemeButton/darkThemeButton.js"></script>
+    </head>
+    <body>
+        <div class="documentWrapper">
+            <header>
+                <a href="https://github.com/arpadroid/style-bun" target="_blank">
+                    <h1>@arpadroid/style-bun</h1>
+                </a>
+                <blockquote class="demo-note">
+                    Style Bun is a powerful and flexible bundler designed for scalability and developer
+                    experience in theme-based applications with automatic compilation, minification, and live
+                    reload support.
+                </blockquote>
+            </header>
+            <main>
+                <section class="features">
+                    <h2>✨ Key Features</h2>
+                    <ul>
+                        <li>
+                            🎨 <strong>Multi-Theme Support</strong> - Bundle multiple themes simultaneously
+                            (light/dark, mobile/desktop) with easy toggling for optimal performance.
+                        </li>
+                        <li>
+                            🔧 <strong>Amazing Developer Experience</strong> - Reduces complexity and cognitive load
+                            when working with large, theme-based applications. Enhances DX with live reload and no loss of state.
+                        </li>
+                        <li>
+                            📁 <strong>Modular Architecture</strong> - Import stylesheets from anywhere in
+                            your project with loose coupling and separation of concerns.
+                        </li>
+                        <li>
+                            ⚡ <strong>Lightning Fast Performance</strong> - Built with LightningCSS for
+                            optimal speed and reduced browser load.
+                        </li>
+                        <li>
+                            🪶 <strong>Ultra-Lightweight & Zero Config</strong> - Minimal dependencies and works out-of-the-box with sensible defaults.
+                        </li>
+                        <li>
+                            📦 <strong>CSS & SCSS Support</strong> - CSS works out-of-the-box. Optional SCSS support with
+                            automatic compilation and minification for production-ready outputs.
+                        </li>
+                        <li>
+                            🌍 <strong>Framework Agnostic</strong> - Works seamlessly with any web application without framework dependencies.
+                        </li>
+                    </ul>
+                </section>
+
+                <details open>
+                    <summary><h2>🚀 Quick Start</h2></summary>
+                    <h3>Installation</h3>
+                    <pre><code>npm install @arpadroid/style-bun</code></pre>
+
+                    <h3>Basic Usage</h3>
+                    <pre><code>import { ThemesBundler } from '@arpadroid/style-bun';
+
+const bundler = new ThemesBundler({
+  themes: [
+    { path: './src/themes/default' },
+    { path: './src/themes/dark' }
+  ],
+  minify: process.env.NODE_ENV === 'production'
+});
+
+await bundler.bundle();</code></pre>
+                </details>
+
+                <details open>
+                    <summary><h2>📁 Theme Structure</h2></summary>
+                    <p>Create a modular theme structure like this:</p>
+                    <pre><code>src/
+└── themes/
+    ├── default/
+    │   ├── default.config.js
+    │   ├── vars/
+    │   │   ├── colors.css
+    │   │   └── typography.css
+    │   └── components/
+    │       └── buttons.css
+    └── dark/
+        ├── dark.config.js
+        └── vars/
+            └── colors.css</code></pre>
+
+                    <p>Configure each theme with a config file:</p>
+                    <pre><code>// default.config.js
+export default {
+  includes: [
+    'vars/colors',
+    'vars/typography', 
+    'components/buttons'
+  ]
+};</code></pre>
+                </details>
+
+                <details open>
+                    <summary><h2>🎨 Theme Toggling</h2></summary>
+
+                    <h3>🔘 Interactive Theme Switching</h3>
+                    <p>
+                        Toggle between light and dark themes by enabling/disabling stylesheets with
+                        JavaScript:
+                    </p>
+
+                    <pre><code>&lt;link id="dark-theme" disabled rel="stylesheet" href="themes/dark/dark.bundled.css" /&gt;</code></pre>
+
+                    <p>Simply toggle the <code>disabled</code> attribute to switch themes:</p>
+
+                    <pre><code>// Toggle dark theme
+const darkTheme = document.getElementById('dark-theme');
+darkTheme.disabled = !darkTheme.disabled;</code></pre>
+
+                    <p>Try it out with this button: <dark-theme-button /></p>
+
+                    <h3>📱 Responsive Theme Loading</h3>
+
+                    <p>Use CSS media queries to automatically load different themes based on screen size:</p>
+                    <pre>
+                    <code>&lt;link id="mobile-theme" rel="stylesheet" media="screen and (max-width: 700px)" href="themes/mobile/mobile.bundled.css" /&gt;</code>
+                    <code>&lt;link id="desktop-theme" rel="stylesheet" media="screen and (min-width: 701px)" href="themes/desktop/desktop.bundled.css" /&gt;</code>
+                    </pre>
+                    <p>
+                        This approach automatically toggles themes based on viewport size - resize your
+                        browser window to see the difference!
+                    </p>
+                </details>
+
+                <details open>
+                    <summary><h2>🛠️ Development Setup</h2></summary>
+                    <p>If you've cloned this project from GitHub:</p>
+                    <pre><code>git clone https://github.com/arpadroid/style-bun.git
+cd style-bun
+npm install
+
+# Run demo with live reload
+npm run demo
+
+# Or run individual commands:
+npm run bundle:dev  # Bundle CSS in development mode
+npm start           # Start the demo server</code></pre>
+                </details>
+
+                <footer>
+                    <p>
+                        Learn more:
+                        <a href="https://github.com/arpadroid/style-bun" target="_blank">GitHub Repository</a>
+                        |
+                        <a href="https://www.npmjs.com/package/@arpadroid/style-bun" target="_blank"
+                            >NPM Package</a
+                        >
+                    </p>
+                </footer>
+            </main>
+        </div>
+    </body>
+</html>

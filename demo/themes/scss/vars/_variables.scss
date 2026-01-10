@@ -1,0 +1,23 @@
+// Variables
+$primary-color: #3498db;
+$primary-color-dark: #2980b9;
+$secondary-color: #2ecc71;
+$text-color: #333;
+$background-color: #fff;
+$border-radius: 4px;
+
+// Spacing
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+
+:root {
+    --primary-color: #{$primary-color};
+    --secondary-color: #{$secondary-color};
+    --text-color: #{$text-color};
+    --background-color: #{$background-color};
+    --border-radius: #{$border-radius};
+    --spacing-sm: #{$spacing-sm};
+    --spacing-md: #{$spacing-md};
+    --spacing-lg: #{$spacing-lg};
+}

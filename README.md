@@ -1,401 +1,408 @@
-# Arpadroid Stylesheet Bundler
+# README - **_`@arpadroid/style-bun`_**
 
-A powerful and flexible CSS/SCSS/LESS bundler designed for theme-based applications. Build multiple stylesheets from modular sources across your application with automatic compilation, minification, and live reload support.
+![version](https://img.shields.io/badge/version-1.0.0-lightblue)
+![node version](https://img.shields.io/badge/node-%3E%3D16.0.0-lightyellow)
+![npm version](https://img.shields.io/badge/npm-%3E%3D8.0.0-pink)
 
-## Features
+> **_Links:_** &nbsp; [🚀 Quick Start](#quick-start) | [📐 How It Works](#how-it-works) | [🎨 Theme Toggling](#theme-toggling) | [�️ Development Setup](#development-setup) | [🚫 Error Handling](#error-handling) | [📖 API](docs/API.md) | [🤝 Contributing](#contributing) | [📝 Changelog](docs/CHANGELOG.md)
 
-🎨 **Multi-Theme Support** - Bundle multiple themes simultaneously (light/dark, mobile/desktop, etc.)  
-📦 **Multiple Preprocessors** - CSS, SCSS, and LESS support with automatic compilation  
-⚡ **Lightning Fast** - Built with LightningCSS for optimal performance  
-🔄 **Live Reload** - Watch mode with instant browser updates (no state loss)  
-🗜️ **Automatic Minification** - Production-ready minified outputs  
-📁 **Modular Architecture** - Import stylesheets from anywhere in your project  
-🌍 **Cross-Platform** - Works with any build system or framework  
-🔧 **Zero Configuration** - Sensible defaults with full customization options
+> `@arpadroid/style-bun` is a powerful and flexible CSS/SCSS stylesheet bundler, designed for scalability, maintainability and developer experience. <br/> It supports big and small applications with CSS compilation, minification, and live reload.
 
-## Installation
+<br/>
+
+## ✨ Features
+
+- 🎨 **Multi-Theme Support** - Bundle multiple themes simultaneously (light/dark, mobile/desktop) with easy toggling for optimal performance.
+- 🔧 **Great DX** - Enhances developer experience, reduces cognitive load, improves maintainability and streamlines development,
+- 📁 **Modular Architecture** - Import stylesheets from anywhere in your project with loose coupling and separation of concerns.
+- ⚡ **Lightning Fast Performance** - Built with LightningCSS for optimal speed and reduced browser load.
+- 🪶 **Ultra-Lightweight & Zero Config** - Minimal dependencies and works out-of-the-box with sensible defaults.
+- 📦 **CSS & SCSS Support** - CSS works out-of-the-box. Optional SCSS support with automatic compilation and minification for production-ready outputs.
+- 🌍 **Framework Agnostic** - Works seamlessly with any web application without framework dependencies.
+
+<br/>
+
+<div id="quick-start"></div>
+
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
-npm install @arpadroid/stylesheet-bundler
+npm install @arpadroid/style-bun --save-dev
+# Optional for SCSS Support
+npm install sass --save-dev
 ```
 
-## Quick Start
+### Basic Usage
 
-### 1. Create Theme Structure
-
-```
-src/
-└── themes/
-    ├── default/
-    │   ├── default.config.json
-    │   ├── vars/
-    │   │   ├── colors.css
-    │   │   └── typography.css
-    │   └── components/
-    │       └── buttons.css
-    └── dark/
-        ├── dark.config.json
-        └── vars/
-            └── colors.css
-```
-
-### 2. Configure Theme
-
-```json
-// src/themes/default/default.config.json
-{
-  "includes": [
-    "vars/colors",
-    "vars/typography", 
-    "components/buttons"
-  ]
-}
-```
-
-### 3. Bundle Themes
+Within your build script (e.g., `build.js`), set up the Themes Bundler as follows:
 
 ```javascript
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
+// Import dependencies.
+import { ThemesBundler } from '@arpadroid/style-bun';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
+// Parse command line arguments.
+const argv = yargs(hideBin(process.argv)).argv;
+const cwd = process.cwd();
+
+const mode = argv.mode || 'development';
+const basePath = cwd + '/themes';
+
+// Instantiate bundler.
 const bundler = new ThemesBundler({
-  themes: [
-    { path: './src/themes/default' },
-    { path: './src/themes/dark' }
-  ],
-  minify: process.env.NODE_ENV === 'production'
+    themes: [{ path: `${basePath}/default` }, { path: `${basePath}/mobile` }],
+    patterns: ['{cwd}/components', '{cwd}/pages'],
+    minify: mode === 'production',
+    commonThemePath: basePath + '/common'
 });
 
-await bundler.bundle();
-```
-
-## Usage
-
-### Basic Theme Bundling
-
-```javascript
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
-
-const bundler = new ThemesBundler({
-  themes: [
-    { path: './src/themes/default' },
-    { path: './src/themes/dark' }
-  ],
-  patterns: ['./src/components/**/*'],
-  minify: true
+// Wait until the bundler is ready.
+bundler.promise.then(async () => {
+    // Clean-up the output directory before compiling.
+    await bundler.cleanup();
+    // Bundle all themes.
+    await bundler.bundle();
+    // Watch all files for changes.
+    mode === 'development' && bundler.watch();
 });
-
-// Bundle all themes
-await bundler.bundle();
-
-// Development mode with watch
-if (process.env.NODE_ENV === 'development') {
-  bundler.watch();
-}
 ```
 
-### Advanced Configuration
+### Configuration
+
+See the [API Reference](docs/API.md) for full details on configuration options available in `ThemesBundler` and individual theme configs.
+
+### 🗂️ Using `themesPath` ✅
+
+You can optionally provide a `themesPath` to point the bundler at a directory containing multiple theme folders. The bundler will scan the directory and load any subdirectories that contain a `[themeName].config.js` file (e.g. `src/themes/default/default.config.js`). This is useful when you keep all themes in a single directory and want them discovered automatically.
+
+Example:
 
 ```javascript
+import path from 'path';
+const cwd = process.cwd();
 const bundler = new ThemesBundler({
-  themes: [
-    { 
-      path: './src/themes/default',
-      extension: 'scss',
-      target: './dist/themes/default.css',
-      minifiedTarget: './dist/themes/default.min.css'
-    },
-    { 
-      path: './src/themes/dark',
-      extension: 'scss'
+    themesPath: path.join(cwd, 'themes'),
+    patterns: [path.join(cwd, 'components', '**', '*')],
+    exportPath: path.join(cwd, 'dist', 'themes')
+});
+```
+
+<br/>
+
+<div id="how-it-works"></div>
+
+## 📐 How it Works
+
+> **💡** Each theme produces a **single optimized CSS file** by merging stylesheets from two sources.
+
+### 🎯 The Two-Source Approach
+
+Style Bun collects and merges stylesheets from two locations to create one unified CSS file per theme:
+
+- **1. Theme Directory Files (via `includes` array)**
+
+    Define explicit files in your theme's config to control **compilation order** and create the foundation:
+
+    **Example: `themes/dark/dark.config.js`**
+
+    ```javascript
+    export default {
+        includes: [
+            'vars/colors', // ← Compiled FIRST
+            'vars/typography', // ← Then this
+            'components/buttons' // ← Then this
+        ]
+    };
+    ```
+
+    **Result:** Variables load before components that use them. No CSS import HTTP requests! 🚀
+
+- **2. Pattern-Matched Files (via `patterns` array)**
+  Automatically discover component-specific theme files across your project:
+
+    **File Structure:**
+
+    ```
+    components/
+    ├── 🧩 button/
+    │   ├── button.js
+    │   ├── button.default.css  ← Found by pattern matching!
+    │   └── button.dark.css     ← Found by pattern matching!
+    └── 🧩 card/
+        ├── card.js
+        ├── card.default.css    ← Found by pattern matching!
+        └── card.dark.css       ← Found by pattern matching!
+    ```
+
+    **Bundler Config:**
+
+    ```javascript
+    const bundler = new ThemesBundler({
+        themes: [{ path: './themes/default' }, { path: './themes/dark' }],
+        patterns: ['./components'] // ← Scans for *.default.css and *.dark.css
+    });
+    ```
+
+### 🔄 The Merge Process
+
+```
+┌─────────────────────────────────────────┐
+│  DARK THEME BUNDLING                    │
+├─────────────────────────────────────────┤
+│                                         │
+│  📁 Theme Directory (includes):         │
+│    ✓ vars/colors.css                    │
+│    ✓ vars/typography.css                │
+│    ✓ components/buttons.css             │
+│                                         │
+│  ➕ MERGED WITH                         │
+│                                         │
+│  🔍 Pattern-Matched Files:              │
+│    ✓ components/button/button.dark.css  │
+│    ✓ components/card/card.dark.css      │
+│    ✓ pages/home/home.dark.css           │
+│                                         │
+│  ⬇                                      │
+│                                         │
+│  📦 Single Output File:                 │
+│    → themes/dark/dark.bundled.css       │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### ✨ Why This Matters
+
+- **⚡ Zero HTTP Requests** - No `@import` statements means faster page loads
+- **🎯 Controlled Order** - Use `includes` to ensure variables/mixins load first
+- **🧩 Component Isolation** - Styles live next to components, not in theme folders
+- **🔗 Loose Coupling** - Themes unaware of project structure, patterns handle discovery
+- **📦 Single File Output** - Each theme = one CSS file = optimal performance
+
+### 🏭 Production vs Development Output
+
+Style Bun creates different output files depending on your build mode:
+
+- #### **Development Mode** (`minify: false`)
+
+    ```javascript
+    const bundler = new ThemesBundler({
+        themes: [{ path: './themes/dark' }],
+        minify: false // or omit (defaults to false)
+    });
+    ```
+
+    **Output:**
+
+    ```
+    ✅ themes/dark/dark.bundled.css  ← Unminified, readable, with source formatting
+    ```
+
+- #### **Production Mode** (`minify: true`)
+
+    ```javascript
+    const bundler = new ThemesBundler({
+        themes: [{ path: './themes/dark' }],
+        minify: true // Enable minification
+    });
+    ```
+
+    **Output:**
+
+    ```
+    ✅ themes/dark/dark.bundled.css  ← Unminified (for debugging)
+    ✅ themes/dark/dark.min.css      ← Minified (use this in production!)
+    ```
+
+    > **📦 Production Tip:** Always use the `.min.css` file in production for optimal performance and smaller bundle sizes.
+
+<br/>
+
+**HTML Example:**
+
+```html
+<!-- Development -->
+<link rel="stylesheet" href="themes/dark/dark.bundled.css" />
+
+<!-- Production -->
+<link rel="stylesheet" href="themes/dark/dark.min.css" />
+```
+<br/>
+
+<div id="theme-toggling"></div>
+
+## 🎨 Theme Toggling
+
+- ### 🔘 Interactive Theme Switching
+
+    Toggle between light and dark themes by enabling/disabling stylesheets with JavaScript:
+
+    ```html
+    <link id="dark-theme" disabled rel="stylesheet" href="themes/dark/dark.bundled.css" />
+    ```
+
+    Simply toggle the `disabled` attribute to switch themes on and off:
+
+    ```javascript
+    // Toggle dark theme
+    const darkTheme = document.getElementById('dark-theme');
+    darkTheme.disabled = !darkTheme.disabled;
+    ```
+
+    Or use a function to switch themes dynamically:
+
+    ```javascript
+    function switchTheme(themeName) {
+        const links = document.querySelectorAll('link[data-theme]');
+        links.forEach(link => {
+            link.disabled = link.dataset.theme !== themeName;
+        });
     }
-  ],
-  patterns: [
-    './src/components/**/*',
-    './src/layouts/**/*'
-  ],
-  commonThemePath: './src/themes/common',
-  minify: true,
-  exportPath: './dist/themes'
-});
+    ```
+
+<br/>
+
+- ### 🧑‍💻 Programmatic Theme Loading
+
+    ```javascript
+    // Load theme based on user preference
+    const theme = localStorage.getItem('theme') || 'default';
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `/themes/${theme}/${theme}.min.css`;
+    document.head.appendChild(link);
+    ```
+
+<br/>
+
+- ### 📱 Responsive Theme Loading
+
+    Use CSS media queries to automatically load different themes based on screen size:
+
+    ```html
+    <link
+        id="mobile-theme"
+        rel="stylesheet"
+        media="screen and (max-width: 700px)"
+        href="themes/mobile/mobile.bundled.css"
+    />
+
+    <link
+        id="desktop-theme"
+        rel="stylesheet"
+        media="screen and (min-width: 701px)"
+        href="themes/desktop/desktop.bundled.css"
+    />
+    ```
+
+    Resize your browser window to see the difference!
+
+<br/>
+
+<div id="development-setup"></div>
+
+## �️ Development Setup
+
+If you've cloned this project from GitHub:
+
+```bash
+git clone https://github.com/arpadroid/style-bun.git
+cd style-bun
+npm install
+
+# Run the demo server with live reload:
+npm run demo
+
+# Or run individual commands:
+npm run bundle:dev  # Bundle CSS in development mode
+npm start           # Start the demo server
 ```
 
-### Individual Theme Bundler
+<br/>
+
+<div id="error-handling"></div>
+
+## 🚫 Error Handling
+
+### Common Errors
+
+#### SCSS Compilation Errors
+
+If you encounter SCSS compilation errors, ensure the `sass` package is installed:
+
+```bash
+npm install sass
+```
+
+#### File Not Found
+
+If theme files are not found, enable verbose logging:
 
 ```javascript
-import { ThemeBundler } from '@arpadroid/stylesheet-bundler';
-
-const theme = new ThemeBundler({
-  path: './src/themes/default',
-  extension: 'scss',
-  includes: [
-    'vars/colors',
-    'components/buttons',
-    'layouts/grid'
-  ]
-});
-
-await theme.bundle();
-```
-
-## Configuration
-
-### ThemesBundler Configuration
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `themes` | `ThemeBundlerConfig[]` | Array of theme configurations |
-| `patterns` | `string[]` | Glob patterns to find additional theme files |
-| `minify` | `boolean` | Enable minification (default: false) |
-| `commonThemePath` | `string` | Path to shared theme files |
-| `exportPath` | `string` | Output directory for bundled themes |
-| `watchPaths` | `string[]` | Additional paths to watch for changes |
-
-### Theme Configuration
-
-| Option | Type | Description |
-|--------|------|-------------|
-| `path` | `string` | **Required** - Absolute path to theme directory |
-| `includes` | `string[]` | Stylesheet paths relative to theme directory |
-| `extension` | `'css' \| 'scss' \| 'less'` | File extension (default: 'css') |
-| `target` | `string` | Custom output path for development build |
-| `minifiedTarget` | `string` | Custom output path for minified build |
-| `baseTheme` | `string` | Base theme to extend from |
-| `verbose` | `boolean` | Enable detailed logging |
-
-### Theme Config File
-
-Each theme directory should contain a `[theme-name].config.json` file:
-
-```json
-{
-  "includes": [
-    "vars/colors",
-    "vars/typography",
-    "vars/layout",
-    "components/buttons",
-    "components/forms",
-    "layouts/grid"
-  ],
-  "extension": "scss"
-}
-```
-
-## File Naming Conventions
-
-### External Theme Files
-
-Theme-specific files in external directories should follow this pattern:
-```
-[filename].[theme-name].[extension]
-```
-
-Examples:
-- `button.default.scss`
-- `navigation.dark.css`
-- `layout.mobile.scss`
-
-### Output Files
-
-The bundler generates these files in each theme directory:
-- `[theme-name].bundled.css` - Development version
-- `[theme-name].min.css` - Minified production version
-
-## Development Workflow
-
-### Watch Mode for Live Development
-
-```javascript
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
-
 const bundler = new ThemesBundler({
-  themes: [
-    { path: './src/themes/default' },
-    { path: './src/themes/dark' }
-  ]
-});
-
-// Initial bundle
-await bundler.bundle();
-
-// Watch for changes
-bundler.watch();
-
-// Clean up when done
-bundler.cleanup();
-```
-
-### Integration with Build Tools
-
-#### Webpack Integration
-
-```javascript
-// webpack.config.js
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
-
-export default async () => {
-  const bundler = new ThemesBundler({
     themes: [
-      { path: './src/themes/default' },
-      { path: './src/themes/dark' }
-    ],
-    minify: process.env.NODE_ENV === 'production'
-  });
-
-  await bundler.bundle();
-
-  if (process.env.NODE_ENV === 'development') {
-    bundler.watch();
-  }
-
-  return {
-    // your webpack config
-  };
-};
-```
-
-#### Vite Integration
-
-```javascript
-// vite.config.js
-import { defineConfig } from 'vite';
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
-
-export default defineConfig(async () => {
-  const bundler = new ThemesBundler({
-    themes: [
-      { path: './src/themes/default' },
-      { path: './src/themes/dark' }
+        {
+            path: './themes/dark',
+            verbose: true // Enable detailed logging
+        }
     ]
-  });
-
-  await bundler.bundle();
-
-  return {
-    // your vite config
-  };
 });
 ```
 
-## Live Reload Setup
+#### Pattern Matching Issues
 
-For optimal development experience with instant CSS updates:
+Ensure pattern-matched files follow the naming convention:
 
-### 1. Install LiveReload Extension
-- [Chrome Extension](https://chrome.google.com/webstore/detail/livereload/jnihajbhpnppcggbcgedagnkighmdlei)
-- [Firefox Extension](https://addons.mozilla.org/en-US/firefox/addon/livereload-web-extension/)
-
-### 2. Set Up File Watcher
-
-```javascript
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
-
-const bundler = new ThemesBundler({
-  themes: [{ path: './src/themes/default' }]
-});
-
-await bundler.bundle();
-
-// Enable watch mode for development
-if (process.env.NODE_ENV === 'development') {
-  bundler.watch();
-}
+```
+✅ button.dark.css       # Correct
+❌ button-dark.css       # Wrong
+❌ dark.button.css       # Wrong
 ```
 
-### 3. Serve Your Application
-Make sure your application runs on a local server (not file://) for LiveReload to work.
+> **💡 Tip:** The sub-extension must match the theme name exactly.
 
-## Examples
+<br/>
 
-### Multi-Theme E-commerce Site
+<div id="dependencies"></div>
 
-```javascript
-const bundler = new ThemesBundler({
-  themes: [
-    { path: './src/themes/customer', extension: 'scss' },
-    { path: './src/themes/admin', extension: 'scss' },
-    { path: './src/themes/mobile', extension: 'scss' }
-  ],
-  patterns: [
-    './src/components/**/*',
-    './src/pages/**/*'
-  ],
-  commonThemePath: './src/themes/common',
-  minify: process.env.NODE_ENV === 'production'
-});
-```
+## 📦 Dependencies
 
-### Component Library with Themes
+### Core Dependencies
 
-```javascript
-const bundler = new ThemesBundler({
-  themes: [
-    { path: './themes/material' },
-    { path: './themes/corporate' },
-    { path: './themes/minimal' }
-  ],
-  patterns: ['./src/components/**/*'],
-  exportPath: './dist/themes'
-});
-```
+- **[LightningCSS](https://lightningcss.dev/)** - Ultra-fast CSS processing and minification
+- **[Chokidar](https://github.com/paulmillr/chokidar)** - Cross-platform file watching for live reload
+- **[Glob](https://github.com/isaacs/node-glob)** - File pattern matching
+- **[Yargs](https://yargs.js.org/)** - Command line argument parsing
 
-## Why Use Arpadroid Stylesheet Bundler?
+### Optional Dependencies
 
-### 🎯 **Solves Real Problems**
-- **CSS Architecture** - Organize styles by themes instead of complex selector hierarchies
-- **Performance** - Eliminate @import statements that block rendering
-- **Maintainability** - Modular stylesheet organization across your entire application
-- **Developer Experience** - Instant live reload without losing application state
+- **[SASS](https://sass-lang.com/)** - SCSS preprocessing and compilation (install separately if needed)
 
-### ⚡ **Built for Performance**
-- **LightningCSS** - Ultra-fast CSS processing and minification
-- **Selective Loading** - Load only the theme styles you need
-- **Production Optimization** - Automatic minification and compression
+### Development Dependencies
 
-### 🔧 **Framework Agnostic**
-Works with any setup:
-- React, Vue, Angular applications
-- Static site generators
-- Node.js applications
-- Webpack, Vite, Rollup, or custom build systems
+- **[Browser Sync](https://browsersync.io/)** - Live reload development server
+- **[Jest](https://jestjs.io/)** - Testing framework
+- **[Babel Jest](https://babeljs.io/docs/babel-jest)** - ES6+ transpilation for tests
+- **[ESLint](https://eslint.org/)** - Code linting and formatting
 
-## Migration from Old Versions
+<br/>
 
-If migrating from older versions, update your imports:
+<div id="contributing"></div>
 
-```javascript
-// Old (CommonJS)
-const { ThemesBundler } = require('arpadroid-themes');
+## 🤝 Contributing
 
-// New (ES Modules)
-import { ThemesBundler } from '@arpadroid/stylesheet-bundler';
-```
+This project has specific architectural goals. If you'd like to contribute:
 
-## API Reference
+1. **[Open an issue](https://github.com/arpadroid/module/issues/new)** describing your proposal
+2. Wait for maintainer feedback before coding
+3. PRs without prior discussion may be closed
 
-### ThemesBundler Methods
+**[Bug reports](https://github.com/arpadroid/module/issues/new)** are always welcome!
 
-- `bundle()` - Bundle all configured themes
-- `watch()` - Enable file watching for development
-- `cleanup()` - Clean output directories
-- `getTheme(name)` - Get specific theme bundler instance
+<br/>
 
-### ThemeBundler Methods
-
-- `bundle()` - Bundle individual theme
-- `watch()` - Watch individual theme for changes
-- `cleanup()` - Clean theme output directory
-
-## Dependencies
-
-- **LightningCSS** - Fast CSS processing and minification
-- **Sass** - SCSS compilation support
-- **Less** - LESS compilation support
-- **Glob** - File pattern matching
-
-## License
+## 📄 License
 
 MIT License - see LICENSE file for details.
-
-## Contributing
-
-Contributions welcome! Please read our contributing guidelines before submitting pull requests.

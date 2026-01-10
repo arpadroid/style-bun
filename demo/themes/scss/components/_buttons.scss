@@ -1,0 +1,18 @@
+button {
+    cursor: pointer;
+    padding: $spacing-sm $spacing-md;
+    border: none;
+    border-radius: $border-radius;
+    background-color: $primary-color;
+    color: #fff;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: $primary-color-dark;
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+}

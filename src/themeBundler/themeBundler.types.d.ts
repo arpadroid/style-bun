@@ -1,9 +1,9 @@
 export type ThemeBundlerConfigType = {
     /**
      * @property {string} path - The absolute path to the theme directory containing all stylesheets.
-     * It is NOT required via the file config [themeName].config.json.
+     * It is NOT required via the file config [themeName].config.js.
      * It is the only required property when creating an instance of the ThemesBundler and defining the themes array.
-     * Check it out in the the sample script demo/css/bundle.js.
+     * Check it out in the the sample script demo/bundle.js.
      */
     path?: string;
 
@@ -15,11 +15,10 @@ export type ThemeBundlerConfigType = {
     includes?: string[];
 
     /**
-     * @property {'css' | 'less' | 'scss'} extension - The extension of the theme files, the default is 'css'.
-     * Note: the ThemesBundler will allow you to have different themes with different extensions.
-     * You have the possibility to have a theme with a .less extension and another with a .scss extension.
+     * @property {'css' | 'scss'} extension - The extension of the theme files, the default is 'css'.
+     * Note: SCSS support requires the 'sass' package to be installed separately.
      */
-    extension?: 'css' | 'less' | 'scss';
+    extension?: 'css' | 'scss';
 
     /**
      * @property {string} baseTheme - The name of the base theme to be used as a base for the current theme, its contents will be prepended to the current theme file.
@@ -36,7 +35,7 @@ export type ThemeBundlerConfigType = {
      * @property {string} configFile - An absolute path to the configuration file for the theme config.
      * It is required to have a config file for any theme. I
      * If the configFile is not specified in the configuration, then the script will look for a file following this pattern:
-     * '[themesPath]/[themeName]/[themeName].config.json' e.g. 'src/themes/default/default.config.json'
+     * '[themesPath]/[themeName]/[themeName].config.js' e.g. 'src/themes/default/default.config.js'
      */
     configFile?: string;
 

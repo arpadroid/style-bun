@@ -16,7 +16,7 @@
         "useDefineForClassFields": false,
         "strictPropertyInitialization": false,
         "rootDir": "./src",
-        "outDir": "./dist/@types",
+        "outDir": "./.tmp/.types",
         "jsx": "react",
         "skipLibCheck": true
     },

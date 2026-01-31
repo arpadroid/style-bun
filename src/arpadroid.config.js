@@ -1,5 +1,5 @@
 const config = {
-    buildTypes: false,
+    buildTypes: true,
     buildStyles: false,
     buildJS: false,
     build18n: false,

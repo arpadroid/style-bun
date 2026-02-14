@@ -27,7 +27,7 @@ describe('Error handling', () => {
     });
 
     it('Throws an error if the theme configuration file is invalid', async () => {
-        const consoleSpy = jest.spyOn(console, 'error');
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         const theme = new ThemeBundler({
             ...defaultConfig,
             path: join(themesDir, 'invalid-config')

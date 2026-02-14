@@ -7,7 +7,7 @@
 import { glob } from 'glob';
 import PATH from 'path';
 import fs, { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'fs';
-import * as sass from 'sass';
+
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { transform } from 'lightningcss';
@@ -490,6 +490,7 @@ class ThemeBundler {
      */
     async scssToCss(scssFile, cssFile) {
         try {
+            const sass = await import('sass');
             const result = sass.compile(scssFile);
             await writeFileSync(cssFile, result.css);
             return result.css;

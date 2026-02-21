@@ -1,9 +1,19 @@
 {
-    "author": "Andres Vaquero (@arpadroid) <web.andresvaquero@gmail.com> ",
     "name": "@arpadroid/style-bun",
+    "description": "A stylesheet bundler for multi-theme applications focusing on scalability and DX. Bundle modular stylesheets into themes with automatic compilation, minification, and live reload support.",
+    "author": "Andres Vaquero (@arpadroid) <web.andresvaquero@gmail.com> ",
     "type": "module",
     "version": "1.0.0",
-    "exports": "./src/index.mjs",
+    "exports": {
+        ".": {
+            "types": "./src/types.d.ts",
+            "default": "./src/index.mjs"
+        },
+        "./themesBundler": {
+            "types": "./src/themesBundler/themesBundler.types.d.ts",
+            "default": "./src/themesBundler/themesBundler.mjs"
+        }
+    },
     "main": "./src/index.mjs",
     "types": "./src/types.d.ts",
     "files": [
@@ -11,7 +21,6 @@
         "README.md",
         "LICENSE"
     ],
-    "description": "A stylesheet bundler for multi-theme applications focusing on scalability and DX. Bundle modular stylesheets into themes with automatic compilation, minification, and live reload support.",
     "keywords": [
         "css",
         "scss",
@@ -44,14 +53,15 @@
         "url": "https://github.com/arpadroid/style-bun/issues"
     },
     "scripts": {
+        "build": "tsc",
         "build:dev": "node ./demo/bundle.js",
-        "build": "node ./demo/bundle.js --mode=production --verbose=true",
+        "build:demo": "node ./demo/bundle.js --mode=production --verbose=true",
         "clean:install": "npm run clean && npm install",
         "clean": "rm -rf ./dist ./node_modules package-lock.json",
         "demo": "npm run build:dev & npm run start:demo",
         "dev": "npm run demo",
         "lint": "eslint src/**/*.{js,mjs}",
-        "prepublishOnly": "npm run test && npm run lint && npm run build",
+        "prepublishOnly": "npm run test && npm run lint && npm run build:demo",
         "start:demo": "browser-sync start --server demo --files 'demo/**/*' --port 8080 --startPath /demo.html --no-notify",
         "start": "npm run demo",
         "test:coverage": "jest --coverage",
@@ -75,7 +85,8 @@
         "globals": "^17.2.0",
         "jest": "^30.2.0",
         "prettier": "^3.8.1",
-        "sass": "^1.97.3"
+        "sass": "^1.97.3",
+        "typescript": "^5.9.3"
     },
     "dependencies": {
         "chokidar": "^5.0.0",
@@ -85,6 +96,10 @@
     },
     "peerDependencies": {
         "sass": "^1.77.0"
+    },
+    "overrides": {
+        "minimatch": "10.2.1",
+        "ajv": "8.18.0"
     },
     "peerDependenciesMeta": {
         "sass": {

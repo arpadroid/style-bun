@@ -39,9 +39,11 @@ describe('ThemesBundler', () => {
     });
 
     it('initializes the bundler', async () => {
+        jest.spyOn(console, 'error').mockImplementation(() => {});
         const response = await bundler.promise;
         expect(bundler.themes.length).toBe(4);
         expect(response?.themes).toBe(bundler.themes);
+        jest.restoreAllMocks();
     });
 
     it('cleans up files', async () => {

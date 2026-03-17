@@ -6,12 +6,12 @@
     "version": "1.0.0",
     "exports": {
         ".": {
-            "types": "./src/types.d.ts",
-            "default": "./src/index.mjs"
+            "types": "./dist/@types/types.compiled.d.ts",
+            "import": "./src/index.mjs"
         },
         "./themesBundler": {
-            "types": "./src/themesBundler/themesBundler.types.d.ts",
-            "default": "./src/themesBundler/themesBundler.mjs"
+            "types": "./dist/@types/themesBundler.compiled.d.ts",
+            "import": "./src/themesBundler/themesBundler.mjs"
         }
     },
     "main": "./src/index.mjs",

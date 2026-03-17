@@ -5,7 +5,7 @@
  * @typedef {import('../themesBundler/themesBundler.types.js').StyleUpdateCallbackType} StyleUpdateCallbackType
  */
 import { glob } from 'glob';
-import PATH from 'path';
+import PATH, { basename } from 'path';
 import fs, { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'fs';
 
 import yargs from 'yargs';
@@ -353,6 +353,7 @@ class ThemeBundler {
 
         verbose && console.info('Compiling CSS theme:', this.themeName);
         const { styles, targetFile, result } = await this.writeStyles();
+        this.targetFile = targetFile;
         let css = styles;
 
         let minifiedTargetFile = this.getMinifiedTargetFile();
@@ -376,7 +377,6 @@ class ThemeBundler {
             });
             fs.writeFileSync(minifiedTargetFile, code);
         }
-
         await this.exportBundle();
         return result;
     }
@@ -495,9 +495,7 @@ class ThemeBundler {
             await writeFileSync(cssFile, result.css);
             return result.css;
         } catch (error) {
-            // @ts-ignore
-            console.error(`Failed to compile SCSS: ${error?.message || 'Unknown error'}`);
-            // throw new Error('Failed to compile SCSS');
+            console.error(`Failed to compile SCSS`, error);
             return undefined;
         }
     }
@@ -567,12 +565,8 @@ class ThemeBundler {
      * @param {StyleUpdateCallbackType} [callback] - The callback to execute after a change.
      */
     watchPath(path, bundle = true, minify = false, callback) {
-        this.watcher = chokidar.watch(path, {
-            ignored: /node_modules/,
-            persistent: true
-        });
+        this.watcher = chokidar.watch(path, { persistent: true });
         this.watchers.push(this.watcher);
-
         this.watcher.on('change', async filePath => {
             const bundledFile = `${this.themeName}.bundled.${this.extension}`;
             const fileName = PATH.basename(filePath);
@@ -582,12 +576,8 @@ class ThemeBundler {
                 ![bundledFile].includes(fileName) &&
                 PATH.extname(filePath) === `.${this.extension}`
             ) {
-                if (bundle) {
-                    await this.bundle(minify);
-                }
-                if (typeof callback === 'function') {
-                    callback(fileName, 'change');
-                }
+                bundle && (await this.bundle(minify));
+                this.callWatchCallback(callback, 'change', filePath);
             }
         });
     }
@@ -600,10 +590,9 @@ class ThemeBundler {
      */
     watchPatterns(bundle = true, minify = false, callback) {
         const patterns = this.getPatterns(false);
-        if (!Array.isArray(patterns)) {
-            return;
+        if (Array.isArray(patterns)) {
+            patterns.forEach(pattern => this.watchPattern(pattern, callback, bundle, minify));
         }
-        patterns.forEach(pattern => this.watchPattern(pattern, callback, bundle, minify));
     }
 
     /**
@@ -616,20 +605,34 @@ class ThemeBundler {
     watchPattern(pattern, callback, bundle = true, minify = false) {
         const path = pattern.replace('/**/*', '').replace('/*', '');
         if (!fs.existsSync(path)) return;
-        const watcher = chokidar.watch(path, {
-            ignored: /node_modules/,
-            persistent: true
-        });
+        const watcher = chokidar.watch(path, { persistent: true });
         this.watchers.push(watcher);
-
         watcher.on('change', async filePath => {
             const ext = PATH.extname(filePath).slice(1);
             const subExt = PATH.basename(filePath).split('.')[1];
             if (this.extension === ext && subExt === this.themeName) {
                 bundle && (await this.bundle(minify));
-                typeof callback === 'function' && callback(PATH.relative(path, filePath), 'change');
+                this.callWatchCallback(callback, 'change', filePath);
             }
         });
+    }
+
+    /**
+     * Calls the watch callback defined in the config with the given payload.
+     * @param {StyleUpdateCallbackType | undefined} callback - The callback to execute.
+     * @param {string} eventName - The name of the event that triggered the callback.
+     * @param {string} filePath - The path of the file that triggered the callback.
+     */
+    callWatchCallback(callback, eventName, filePath) {
+        if (typeof callback !== 'function') return;
+        const payload = {
+            filePath,
+            eventName,
+            themePath: this.path,
+            themeName: this.themeName,
+            targetFile: this.targetFile
+        };
+        callback(payload, this);
     }
 
     // #endregion Watch

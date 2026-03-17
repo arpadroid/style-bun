@@ -2,6 +2,7 @@
  * @typedef {import('./themesBundler.types.js').ThemesBundlerConfigType} ThemesBundlerConfigType
  * @typedef {import('../themeBundler/themeBundler.types.js').ThemeBundlerConfigType} ThemeBundlerConfigType
  * @typedef {import('../common.types.js').BundleThemeArgsType} BundleThemeArgsType
+ * @typedef {import('./themesBundler.types.js').StyleUpdateCallbackPayloadType} StyleUpdateCallbackPayloadType
  */
 
 import PATH from 'path';
@@ -188,10 +189,25 @@ class ThemesBundler {
      * Watches all configured themes for changes.
      */
     watch() {
-        if (this.commonTheme) {
-            this.commonTheme.watch(() => this.bundleThemes());
+        const { watchCallback } = this._config || {};
+
+        /**
+         * Callback function to execute when a theme file changes.
+         * @param {StyleUpdateCallbackPayloadType} payload
+         * @param {ThemeBundler} theme
+         */
+        function cb(payload, theme) {
+            typeof watchCallback === 'function' && watchCallback(payload, theme);
         }
-        this.themes.forEach(theme => theme.watch());
+
+        if (this.commonTheme) {
+            this.commonTheme.watch((payload, theme) => {
+                this.bundleThemes();
+                cb(payload, theme);
+            });
+        }
+
+        this.themes.forEach(theme => theme.watch(cb));
     }
 
     /**

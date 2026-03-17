@@ -1,3 +1,4 @@
+import ThemeBundler from '../themeBundler/themeBundler.mjs';
 import { ThemeBundlerConfigType } from '../themeBundler/themeBundler.types.js';
 
 /**
@@ -48,6 +49,7 @@ export interface ThemesBundlerConfigType {
      */
     watchPaths?: string[];
     exportPath?: string;
+    watchCallback?: StyleUpdateCallbackType;
 }
 
 export type WriteStylesReturnType = {
@@ -57,4 +59,13 @@ export type WriteStylesReturnType = {
     message?: string;
 };
 
-export type StyleUpdateCallbackType = (file: string, event: string) => void;
+export type StyleUpdateCallbackPayloadType = {
+    filePath?: string;
+    eventName?: string;
+    themeName?: string;
+    themePath?: string;
+    watchPath?: string;
+    targetFile?: string;
+};
+
+export type StyleUpdateCallbackType = (payload: StyleUpdateCallbackPayloadType, theme: ThemeBundler) => void;

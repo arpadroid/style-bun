@@ -152,21 +152,21 @@ describe('ThemesBundler', () => {
         });
 
         it('handles undefined config', () => {
-            // @ts-ignore
+            // @ts-expect-error
             const bundler = new ThemesBundler(undefined);
             expect(bundler._config).toBeDefined();
             expect(bundler._config?.themes).toEqual([]);
         });
 
         it('handles null config', () => {
-            // @ts-ignore
+            // @ts-expect-error
             const bundler = new ThemesBundler(null);
             expect(bundler._config).toBeDefined();
             expect(bundler._config?.themes).toEqual([]);
         });
 
         it('handles config without themes array', () => {
-            // @ts-ignore
+            // @ts-expect-error
             const bundler = new ThemesBundler({ themes: null, patterns: [] });
             expect(bundler.themes.length).toBe(0);
         });
@@ -174,8 +174,10 @@ describe('ThemesBundler', () => {
         it('skips themes with missing path property', () => {
             const bundler = new ThemesBundler({
                 themes: [
-                    { path: basePath + '/default' }, // @ts-ignore
-                    { name: 'invalid-no-path' }, // @ts-ignore
+                    { path: basePath + '/default' },
+                    // @ts-expect-error
+                    { name: 'invalid-no-path' },
+                    // @ts-expect-error
                     { path: null }
                 ]
             });

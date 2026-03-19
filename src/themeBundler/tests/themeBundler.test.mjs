@@ -6,6 +6,7 @@ import path from 'path';
 import ThemeBundler from '../themeBundler.mjs';
 import { verifyOutput, demoDir, testDir, defaultThemeDir, themesDir } from './tests.util.mjs';
 import { initializeTest, commonThemeFile, clearFileChanges } from './tests.util.mjs';
+import { jest } from '@jest/globals';
 const outputDir = path.join(testDir, 'output');
 
 const defaultConfig = {
@@ -212,7 +213,9 @@ describe('ThemeBundler', () => {
             if (!theme.baseTheme) {
                 throw new Error('Base theme not set');
             }
+            // @ts-ignore
             theme.baseTheme.bundle = jest.fn().mockResolvedValue(true);
+            // @ts-ignore
             theme.baseTheme.getCSSTargetFile = jest.fn().mockReturnValue(null);
 
             const consoleSpy = jest.spyOn(console, 'error');

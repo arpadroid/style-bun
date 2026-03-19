@@ -4,6 +4,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import ThemeBundler from '../themeBundler.mjs';
+import { jest } from '@jest/globals';
 import path from 'node:path';
 
 const demoDir = path.join(process.cwd(), 'demo');
@@ -65,7 +66,10 @@ describe('SCSS theme', () => {
             '$color: #f.test { color: $color; } .invalid { color: ; }'
         );
 
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to compile SCSS:'));
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining('Failed to compile SCSS'),
+            expect.anything()
+        );
     });
 
     afterAll(async () => {

@@ -5,7 +5,7 @@
  * @typedef {import('../themesBundler/themesBundler.types.js').StyleUpdateCallbackType} StyleUpdateCallbackType
  */
 import { glob } from 'glob';
-import PATH, { basename } from 'path';
+import PATH from 'path';
 import fs, { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'fs';
 
 import yargs from 'yargs';
@@ -495,7 +495,7 @@ class ThemeBundler {
             await writeFileSync(cssFile, result.css);
             return result.css;
         } catch (error) {
-            console.error(`Failed to compile SCSS`, error);
+            console.error('Failed to compile SCSS', error);
             return undefined;
         }
     }

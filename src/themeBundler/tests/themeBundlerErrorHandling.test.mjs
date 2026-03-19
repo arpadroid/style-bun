@@ -1,6 +1,7 @@
 import { join } from 'path';
 import ThemeBundler from '../themeBundler.mjs';
 import { defaultConfig, demoDir, initializeTest, outputDir, themesDir } from './tests.util.mjs';
+import { jest } from '@jest/globals';
 
 describe('Error handling', () => {
     beforeAll(async () => {

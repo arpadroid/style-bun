@@ -4,7 +4,6 @@ module.exports = {
     coverageReporters: ['html', 'text', 'cobertura'],
     testMatch: ['**/__tests__/**/*.?(m)js?(x)', '**/?(*.)(spec|test).?(m)js?(x)'],
     moduleFileExtensions: ['js', 'mjs'],
-
     transform: {
         '^.+\\.m?js$': ['babel-jest', { presets: [['@babel/preset-env', { targets: { node: 'current' } }]] }]
     },

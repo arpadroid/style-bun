@@ -254,13 +254,13 @@ describe('ThemeBundler', () => {
         test('watchPatterns returns early when patterns is not an array', async () => {
             const theme = new ThemeBundler({
                 ...defaultConfig,
-                // @ts-ignore
+                // @ts-expect-error
                 patterns: null
             });
             await theme.promise;
 
+            // @ts-expect-error
             // Mock getPatterns to return a non-array value
-            // @ts-ignore
             jest.spyOn(theme, 'getPatterns').mockReturnValue(null);
 
             const watchPatternSpy = jest.spyOn(theme, 'watchPattern');

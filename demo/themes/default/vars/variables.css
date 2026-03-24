@@ -12,5 +12,8 @@
     --striped-area-outline: 2px solid var(--grey-50);
     --striped-area-border: 2px solid var(--color-background);
     --comboBox-shadow: rgba(99, 99, 99, 0.5) 0px 2px 8px 0px;
-    --theme-transition: background-color 0.4s ease-out, color 0.4s ease-out, border 0.4s ease-out, opacity 0.4s ease-out;
+    --theme-transition-speed: 0.4s;
+    --theme-transition:
+        background-color var(--theme-transition-speed) ease-out, color var(--theme-transition-speed) ease-out,
+        border var(--theme-transition-speed) ease-out, opacity var(--theme-transition-speed) ease-out;
 }
